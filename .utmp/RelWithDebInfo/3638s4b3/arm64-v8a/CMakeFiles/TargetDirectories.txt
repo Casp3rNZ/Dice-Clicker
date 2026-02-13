@@ -1,0 +1,5 @@
+G:/Unity Projects/Dice Idler/Dice Idler/.utmp/RelWithDebInfo/3638s4b3/arm64-v8a/CMakeFiles/edit_cache.dir
+G:/Unity Projects/Dice Idler/Dice Idler/.utmp/RelWithDebInfo/3638s4b3/arm64-v8a/CMakeFiles/rebuild_cache.dir
+G:/Unity Projects/Dice Idler/Dice Idler/.utmp/RelWithDebInfo/3638s4b3/arm64-v8a/GameActivity/CMakeFiles/game.dir
+G:/Unity Projects/Dice Idler/Dice Idler/.utmp/RelWithDebInfo/3638s4b3/arm64-v8a/GameActivity/CMakeFiles/edit_cache.dir
+G:/Unity Projects/Dice Idler/Dice Idler/.utmp/RelWithDebInfo/3638s4b3/arm64-v8a/GameActivity/CMakeFiles/rebuild_cache.dir
