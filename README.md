@@ -54,11 +54,19 @@ $$\text{points} = \text{roll} \times \text{typeMultiplier} \times 10^{(\text{lev
 The displayed score animates toward the actual score with an interpolated counter and dynamic font scaling.
 
 ### Dice
-`DiceManager` spawns dice from save data on startup and handles round-robin rolling. `DiceController` uses Unity physics (`Rigidbody`) for realistic rolls, detects when the die settles, reads the top face, and fires an `OnDiceSettled` event.
+`DiceManager` spawns dice from save data on startup and handles round-robin rolling. 
+`DiceController` uses Unity physics (`Rigidbody`) for realistic rolls, detects when the die settles, reads the top face, and fires an `OnDiceSettled` event.
 
 ### Shop
 `ShopItem` is a `ScriptableObject` (`[CreateAssetMenu]`) defining each dice type's metadata, inicluding multipliers, and custom materials. 
 `ShopManager` handles purchases, deducting score and spawning new dice. Prices scale with a configurable multiplicative growth rate per purchase.
+
+### Dice Thumbnail Renderer
+`DicePreviewRenderer` generates **live 3D thumbnails** of each dice type for the shop UI — entirely at runtime, with no pre-baked images. 
+It creates a hidden staging area far below the playfield, instantiates a copy of each dice type with its correct materials, and renders them with a dedicated off-screen camera and light onto per-item `RenderTexture`s. 
+The dice slowly rotate in their thumbnails to give the shop a polished, dynamic feel. 
+Rendering is throttled (~20 FPS) and batched to stay lightweight, while transforms rotate every frame for smooth motion. 
+Shop UI elements simply bind the resulting texture to a `RawImage`.
 
 ### Save System
 `SaveManager` persists game state (score, unlocked items, dice levels, purchase counts) to a JSON file. Features autosave on a configurable interval (default 30 s) and saves on application quit.
