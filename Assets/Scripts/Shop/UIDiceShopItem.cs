@@ -6,7 +6,7 @@ using System.Numerics;
 
 namespace MyGame
 {
-    public class UIShopItem : MonoBehaviour
+    public class UIDiceShopItem : MonoBehaviour
     {
 
         [SerializeField] private Button purchaseButton;
@@ -22,20 +22,18 @@ namespace MyGame
         {
             if(item == null)
             {
-                Debug.LogError("UIShopItem: Initialize called with null item.");
+                Debug.LogError("UIDiceShopItem: Initialize called with null item.");
                 return;
             }
             if(purchaseButton == null || nameText == null || priceText == null || quantityText == null)
             {
-                Debug.LogError("UIShopItem: One or more UI components are not assigned.", this);
+                Debug.LogError("UIDiceShopItem: One or more UI components are not assigned.", this);
                 return;
             }
             nameText.text = item.Name;
             //descriptionText.text = item.Description;
             originalItemData = item;
-            BigInteger price = item.price;
-            if (totalPurchased > 0)
-                price = (BigInteger)(item.price * Math.Pow(item.priceGrowthRate, totalPurchased));
+            BigInteger price = item.GetPrice(totalPurchased);
             priceText.text = price.ToString("N0");
             purchaseButton.interactable = true;
             purchaseButton.onClick.AddListener(() => onPurchase(item));

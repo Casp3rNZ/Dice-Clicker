@@ -10,13 +10,16 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 7a4f66b50f708184888a771424d3c3d3, type: 3}
-  m_Name: Sapphire
+  m_Name: Iron
   m_EditorClassIdentifier: Assembly-CSharp::ShopItem
-  Id: 9
-  Name: Sapphire
+  Id: 5
+  Name: Iron
   Description: 
-  multiplier: 256
-  diceMaterial: {fileID: 2100000, guid: eaeb31182e9ffda4189849207e3c1b4b, type: 2}
-  pipMaterial: {fileID: 2100000, guid: 2a48801a36a6b354dbcf5089d26327b2, type: 2}
-  price: 128000
+  price: 2500
   priceGrowthRate: 1.15
+  multiplier: 16
+  diceMaterial: {fileID: 2100000, guid: 88460d109e5296848aa4cd9ef5a083d6, type: 2}
+  pipMaterial: {fileID: 2100000, guid: 19ca74d1f77aca34cae7536c424b7cc7, type: 2}
+  autoClickBasePrice: 50000
+  autoClickPriceGrowthRate: 1.25
+  autoClicksPerSecond: 0.05

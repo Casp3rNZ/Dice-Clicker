@@ -7,8 +7,9 @@ A core goal of this project is to **use as few imported assets as possible**. Ne
 ## Gameplay
 - **Tap or click** anywhere on the scene to roll your dice.
 - When each Die lands it awards points based on its roll value, type multiplier, and level multiplier.
-- Spend points in the **shop** to unlock new dice types (e.g. Wood, Stone, Iron, Gold, Emerald, Sapphire, Amethyst, Runic, Void) — each with its own appearance and score multiplier.
+- Spend points in the **dice shop** to unlock new dice types with their own appearance and score multiplier.
 - Purchasing additional copies of a dice type adds more dice to your pool; leveling dice up increases their score multiplier exponentially (×10 per level) and their physical size.
+- Purchase **auto-clicker upgrades** in the clicker shop to automatically roll dice of each tier at a configurable rate — each tier rolls independently.
 
 ## Project Structure
 ```
@@ -22,22 +23,29 @@ Assets/
 ├── Scenes/
 │   └── SampleScene.unity # Main game scene
 ├── Scripts/
-│   ├── GameManager.cs        # Core game loop, scoring, input handling
-│   ├── SaveManager.cs        # JSON save/load with autosave
-│   ├── AudioManager.cs       # Procedural SFX generation & pooled playback
+│   ├── GameManager.cs            # Core game loop, scoring, input handling
+│   ├── SaveManager.cs            # JSON save/load with autosave
+│   ├── AudioManager.cs           # Procedural SFX generation & pooled playback
+│   ├── AutoClickerManager.cs     # Per-tier auto-roll driver
 │   ├── dice/
-│   │   ├── DiceManager.cs        # Dice spawning, rolling, and lifecycle
+│   │   ├── DiceManager.cs        # Dice spawning, rolling (global & per-type)
 │   │   ├── diceController.cs     # Physics-based roll, settle detection, pips
 │   │   └── DicePreviewRenderer.cs
 │   ├── Shop/
-│   │   ├── ShopItem.cs       # ScriptableObject defining a dice type
-│   │   ├── ShopManager.cs    # Purchase logic, price scaling, multipliers
-│   │   ├── UIShopHandler.cs  # Populates shop UI from ShopItem data
-│   │   └── UIShopItem.cs     # Individual shop entry UI behaviour
+│   │   ├── ShopItem.cs               # ScriptableObject: dice type + auto-click metadata
+│   │   ├── DiceShopManager.cs        # Dice purchase logic, price scaling, multipliers
+│   │   ├── AutoClickShopManager.cs   # Auto-click upgrade purchases
+│   │   ├── UIDiceShopHandler.cs      # Populates dice shop UI
+│   │   ├── UIDiceShopItem.cs         # Individual dice shop entry UI
+│   │   ├── UIAutoClickShopHandler.cs # Populates auto-click shop UI
+│   │   └── UIAutoClickShopItem.cs    # Individual auto-click shop entry UI
 │   └── UI Tools/
-│       ├── PopupTextHandler.cs       # Animated floating text
-│       ├── ImageAligner.cs           # UI alignment utility
-│       └── DiceShopWindowManager.cs  # Shop panel toggle
+│       ├── UIWindow.cs                   # Base class for all sliding window panels
+│       ├── DiceShopWindowManager.cs      # Dice shop window (inherits UIWindow)
+│       ├── ClickerShopWindow.cs          # Auto-click shop window (inherits UIWindow)
+│       ├── SettingsMenuWindow.cs         # Settings window (inherits UIWindow)
+│       ├── PopupTextHandler.cs           # Animated floating text
+│       └── ImageAligner.cs               # UI alignment utility
 ├── ShopData/Shop/        # ShopItem ScriptableObject assets
 │   ├── Starter, Wood, Stone, Copper, Iron, Gold
 │   ├── Emerald, Sapphire, Amethyst, Runic, Void
@@ -56,10 +64,20 @@ The displayed score animates toward the actual score with an interpolated counte
 ### Dice
 `DiceManager` spawns dice from save data on startup and handles round-robin rolling. 
 `DiceController` uses Unity physics (`Rigidbody`) for realistic rolls, detects when the die settles, reads the top face, and fires an `OnDiceSettled` event.
+`DiceManager` also supports per-type rolling (`RollNextDiceOfType`) for the auto-clicker system, round-robining independently within each dice tier.
 
-### Shop
-`ShopItem` is a `ScriptableObject` (`[CreateAssetMenu]`) defining each dice type's metadata, inicluding multipliers, and custom materials. 
-`ShopManager` handles purchases, deducting score and spawning new dice. Prices scale with a configurable multiplicative growth rate per purchase.
+### Shops
+The project has two shops — **Dice Shop** and **Auto-Clicker Shop** — both driven by the same `ShopItem` ScriptableObject.
+
+`ShopItem` defines each dice tier's identity, dice-shop pricing, materials, multiplier, and auto-click upgrade pricing/CPS. A static `CalculatePrice()` helper centralises the incremental cost formula ($\text{base} \times \text{rate}^{\text{purchased}}$) so it is never duplicated.
+
+`DiceShopManager` handles dice purchases (deducting score, spawning dice, cascading merges). `AutoClickShopManager` handles auto-click upgrade purchases and notifies `AutoClickerManager` to update the live roll rate.
+
+### Auto-Clicker
+`AutoClickerManager` drives automatic dice rolls per tier. On startup it reads save data to build a list of active tiers and their CPS (`autoClicksPerSecond × purchased`). Each frame it accumulates `deltaTime` per tier and fires `DiceManager.RollNextDiceOfType()` when enough time has banked, with a per-frame cap to prevent runaway catch-up. Purchases update the rate live via `RefreshTier()`.
+
+### UI Windows
+All sliding UI panels (dice shop, clicker shop, settings) inherit from `UIWindow`, which provides animated open/close tweens and **mutual exclusivity** — opening any window automatically closes all others via a static registry. Subclasses (`DiceShopWindowManager`, `ClickerShopWindow`, `SettingsMenuWindow`) add window-specific behaviour.
 
 ### Dice Thumbnail Renderer
 `DicePreviewRenderer` generates **live 3D thumbnails** of each dice type for the shop UI — entirely at runtime, with no pre-baked images. 
@@ -69,7 +87,7 @@ Rendering is throttled (~20 FPS) and batched to stay lightweight, while transfor
 Shop UI elements simply bind the resulting texture to a `RawImage`.
 
 ### Save System
-`SaveManager` persists game state (score, unlocked items, dice levels, purchase counts) to a JSON file. Features autosave on a configurable interval (default 30 s) and saves on application quit.
+`SaveManager` persists game state (score, unlocked items, dice levels, purchase counts, auto-click upgrade counts) to a JSON file. Features autosave on a configurable interval (default 30 s) and saves on application quit.
 
 ### Audio
 `AudioManager` generates SFX **procedurally at runtime** using basic waveforms (square, sawtooth, triangle, Perlin noise) — no external audio files needed, though can be supported. 

@@ -83,7 +83,7 @@ namespace MyGame
         {
             if (die == null || die.GameObject == null)
                 return;
-            if (ShopManager.Instance == null)
+            if (DiceShopManager.Instance == null)
                 return;
             var diceController = die.GameObject.GetComponent<DiceController>();
             if (diceController == null)
@@ -93,7 +93,7 @@ namespace MyGame
 
             diceController.OnDiceSettled += (int result) =>
             {
-                BigInteger baseMultiplier = ShopManager.Instance.GetMultiplierForDiceType(die.Dicetype);
+                BigInteger baseMultiplier = DiceShopManager.Instance.GetMultiplierForDiceType(die.Dicetype);
                 BigInteger levelMultiplier = GetLevelMultiplier(die.Level);
                 BigInteger modifiedResult = result * baseMultiplier * levelMultiplier;
                 AddToScore(modifiedResult);
@@ -141,7 +141,7 @@ namespace MyGame
                 }
                 else
                 {
-                    audioManager.PlaySFX_ScoreCounterTick(0.2f);
+                    audioManager.PlaySFX_ScoreCounterTick(0.05f);
                     BigInteger gap = score - displayedScore;
                     displayedScore += BigInteger.One + gap / 10;
                     if (displayedScore > score) displayedScore = score;

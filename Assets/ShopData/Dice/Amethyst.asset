@@ -10,13 +10,16 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 7a4f66b50f708184888a771424d3c3d3, type: 3}
-  m_Name: Runic
+  m_Name: Amethyst
   m_EditorClassIdentifier: Assembly-CSharp::ShopItem
-  Id: 10
-  Name: Runic
+  Id: 7
+  Name: Amethyst
   Description: 
-  multiplier: 512
-  diceMaterial: {fileID: 2100000, guid: 0f59b25de9cff6b49899f6baa0b433e6, type: 2}
-  pipMaterial: {fileID: 2100000, guid: d20d4b9fd9cf3c447935e6d7191cf16f, type: 2}
-  price: 250000
+  price: 12500
   priceGrowthRate: 1.15
+  multiplier: 64
+  diceMaterial: {fileID: 2100000, guid: f96459880d46a994e92447178d0d3def, type: 2}
+  pipMaterial: {fileID: 2100000, guid: b09f3dbbbcf0057439d9b9ca267e9800, type: 2}
+  autoClickBasePrice: 250000
+  autoClickPriceGrowthRate: 1.25
+  autoClicksPerSecond: 0.05

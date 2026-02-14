@@ -21,6 +21,7 @@ namespace MyGame
         private float _lastCollisionTime = -1f;
 
         private bool isRolling = false;
+        public bool IsRolling => isRolling;
         private bool isInitialized = false;
         private Rigidbody rb;
         private Material diceMaterial;

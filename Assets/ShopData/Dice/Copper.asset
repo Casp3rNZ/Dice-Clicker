@@ -10,13 +10,16 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 7a4f66b50f708184888a771424d3c3d3, type: 3}
-  m_Name: Gold
+  m_Name: Copper
   m_EditorClassIdentifier: Assembly-CSharp::ShopItem
-  Id: 6
-  Name: Gold
+  Id: 4
+  Name: Copper
   Description: 
-  multiplier: 32
-  diceMaterial: {fileID: 2100000, guid: dd2cae874a9b6b14281ad2a410b39df1, type: 2}
-  pipMaterial: {fileID: 2100000, guid: 8ab34b9eda2bc9245b245835a8481edf, type: 2}
-  price: 5000
+  price: 1500
   priceGrowthRate: 1.15
+  multiplier: 8
+  diceMaterial: {fileID: 2100000, guid: 1574047e931389c4a8fd5bdada7d2696, type: 2}
+  pipMaterial: {fileID: 2100000, guid: b7ff9cb486fe69e4dbe0514b38490f25, type: 2}
+  autoClickBasePrice: 30000
+  autoClickPriceGrowthRate: 1.25
+  autoClicksPerSecond: 0.05

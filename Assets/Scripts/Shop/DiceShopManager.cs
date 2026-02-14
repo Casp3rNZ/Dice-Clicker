@@ -5,14 +5,14 @@ using System.Numerics;
 namespace MyGame
 {
 
-    public class ShopManager : MonoBehaviour
+    public class DiceShopManager : MonoBehaviour
     {
-        public static ShopManager Instance { get; private set; }
+        public static DiceShopManager Instance { get; private set; }
         [SerializeField] private DiceManager diceManager;
         [SerializeField] private SaveManager saveManager;
         [SerializeField] private GameManager gameManager;
         [SerializeField] private AudioManager audioManager;
-        [SerializeField] private UIShopHandler uiShopHandler;
+        [SerializeField] private UIDiceShopHandler uiShopHandler;
 
 
             
@@ -24,34 +24,34 @@ namespace MyGame
         {
             if (Instance != null && Instance != this)
             {
-                Debug.LogWarning("Multiple instances of ShopManager detected. Destroying duplicate.", this);
+                Debug.LogWarning("Multiple instances of DiceShopManager detected. Destroying duplicate.", this);
                 Destroy(gameObject);
                 return;
             }
             Instance = this;
             if (diceManager == null)
             {
-                Debug.LogError("ShopManager: diceManager is not assigned.", this);
+                Debug.LogError("DiceShopManager: diceManager is not assigned.", this);
                 return;
             }
             if (saveManager == null)
             {
-                Debug.LogError("ShopManager: saveManager is not assigned.", this);
+                Debug.LogError("DiceShopManager: saveManager is not assigned.", this);
                 return;
             }
             if (gameManager == null)
             {
-                Debug.LogError("ShopManager: gameManager is not assigned.", this);
+                Debug.LogError("DiceShopManager: gameManager is not assigned.", this);
                 return;
             }
             if(uiShopHandler == null)
             {
-                Debug.LogError("ShopManager: uiShopHandler is not assigned.", this);
+                Debug.LogError("DiceShopManager: uiShopHandler is not assigned.", this);
                 return;
             }
             if(audioManager == null)
             {
-                Debug.LogError("ShopManager: audioManager is not assigned.", this);
+                Debug.LogError("DiceShopManager: audioManager is not assigned.", this);
                 return;
             }
         }
@@ -130,7 +130,7 @@ namespace MyGame
         {
             if (item == null)        
             {
-                Debug.LogError("ShopManager: Attempted to purchase a null item.", this);
+                Debug.LogError("DiceShopManager: Attempted to purchase a null item.", this);
                 return;
             }
             // Validate price
@@ -138,7 +138,7 @@ namespace MyGame
 
             itemData itemData = saveManager.GetItemData(item.Id);
             int purchased = itemData != null ? itemData.totalPurchased : 0;
-            BigInteger itemPrice = (BigInteger)(item.price * Math.Pow(item.priceGrowthRate, purchased));
+            BigInteger itemPrice = item.GetPrice(purchased);
             if (currentScore < itemPrice)
             {
                 audioManager.PlaySFX_ShopFail(0.8f);
@@ -168,9 +168,13 @@ namespace MyGame
             }
 
             // Update Shop UI
-            BigInteger nextPrice = (BigInteger)(item.price * Math.Pow(item.priceGrowthRate, purchased + 1));
+            BigInteger nextPrice = item.GetPrice(purchased + 1);
             uiShopHandler.UpdateItemPrice(item, nextPrice);
             uiShopHandler.UpdateItemQuantity(item, purchased + 1);
+
+            // Reveal the auto-click shop entry on first dice purchase
+            if (purchased == 0 && AutoClickShopManager.Instance != null)
+                AutoClickShopManager.Instance.RevealAutoClickItem(item.Id);
 
             // Play purchase sound
             audioManager.PlaySFX_ShopSuccess(0.8f, 0.1f);

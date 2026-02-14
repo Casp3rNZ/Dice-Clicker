@@ -255,6 +255,37 @@ namespace MyGame
             if (_currentSaveData.unlockedItemIds == null) return null;
             return _currentSaveData.unlockedItemIds.Find(item => item.itemId == itemId);
         }
+
+        // ─────────────── Auto-Click Upgrade Data ───────────────
+
+        /// <summary>
+        /// Returns how many times the given auto-click upgrade has been purchased.
+        /// </summary>
+        public int GetAutoClickPurchaseCount(int diceTypeId)
+        {
+            if (_currentSaveData == null) LoadGame();
+            if (_currentSaveData.autoClickUpgrades == null) return 0;
+            var data = _currentSaveData.autoClickUpgrades.Find(d => d.diceTypeId == diceTypeId);
+            return data != null ? data.totalPurchased : 0;
+        }
+
+        /// <summary>
+        /// Records a single purchase of the given auto-click upgrade.
+        /// </summary>
+        public void RecordAutoClickPurchase(int diceTypeId)
+        {
+            if (_currentSaveData == null) LoadGame();
+            if (_currentSaveData.autoClickUpgrades == null)
+                _currentSaveData.autoClickUpgrades = new List<autoClickData>();
+
+            var data = _currentSaveData.autoClickUpgrades.Find(d => d.diceTypeId == diceTypeId);
+            if (data == null)
+            {
+                data = new autoClickData { diceTypeId = diceTypeId, totalPurchased = 0 };
+                _currentSaveData.autoClickUpgrades.Add(data);
+            }
+            data.totalPurchased++;
+        }
     }
 
     /// <summary>
@@ -275,6 +306,7 @@ namespace MyGame
         /// </summary>
         public string playerScore = "0";
         public List<itemData> unlockedItemIds;
+        public List<autoClickData> autoClickUpgrades;
         public string CS;
     }
 
@@ -289,6 +321,19 @@ namespace MyGame
         public List<int> diceLevels = new List<int>();
         /// <summary>
         /// Lifetime total purchases for this tier (for UI display).
+        /// </summary>
+        public int totalPurchased;
+    }
+
+    [System.Serializable]
+    public class autoClickData
+    {
+        /// <summary>
+        /// The dice tier (ShopItem.Id) this auto-click upgrade applies to.
+        /// </summary>
+        public int diceTypeId;
+        /// <summary>
+        /// Lifetime total purchases for this dice tier's auto-click upgrade.
         /// </summary>
         public int totalPurchased;
     }

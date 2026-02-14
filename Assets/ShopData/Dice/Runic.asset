@@ -10,13 +10,16 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 7a4f66b50f708184888a771424d3c3d3, type: 3}
-  m_Name: Wood
+  m_Name: Runic
   m_EditorClassIdentifier: Assembly-CSharp::ShopItem
-  Id: 2
-  Name: Wood
+  Id: 10
+  Name: Runic
   Description: 
-  multiplier: 2
-  diceMaterial: {fileID: 2100000, guid: 2f291ffbf5f9e9c45b0bcdfbf49d6f75, type: 2}
-  pipMaterial: {fileID: 2100000, guid: 757dc787ecc871c48bcc1991d61d2ddb, type: 2}
-  price: 50
+  price: 250000
   priceGrowthRate: 1.15
+  multiplier: 512
+  diceMaterial: {fileID: 2100000, guid: 0f59b25de9cff6b49899f6baa0b433e6, type: 2}
+  pipMaterial: {fileID: 2100000, guid: d20d4b9fd9cf3c447935e6d7191cf16f, type: 2}
+  autoClickBasePrice: 5000000
+  autoClickPriceGrowthRate: 1.25
+  autoClicksPerSecond: 0.05

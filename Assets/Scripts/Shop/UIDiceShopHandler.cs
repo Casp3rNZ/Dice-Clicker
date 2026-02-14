@@ -6,37 +6,37 @@ using System;
 
 namespace MyGame
 {
-    public class UIShopHandler : MonoBehaviour
+    public class UIDiceShopHandler : MonoBehaviour
     {
         [SerializeField] private GameObject shopItemContainer;
         [SerializeField] private GameObject shopItemPrefab;
 
-        private readonly Dictionary<int, UIShopItem> _shopItemMap = new Dictionary<int, UIShopItem>();
+        private readonly Dictionary<int, UIDiceShopItem> _shopItemMap = new Dictionary<int, UIDiceShopItem>();
 
         void Start()
         {
-            if (ShopManager.Instance == null)
+            if (DiceShopManager.Instance == null)
             {
-                Debug.LogError("UIShopHandler: ShopManager.Instance is null.", this);
+                Debug.LogError("UIDiceShopHandler: DiceShopManager.Instance is null.", this);
                 return;
             }
 
             if (shopItemContainer == null)
             {
-                Debug.LogError("UIShopHandler: shopItemContainer is not assigned.", this);
+                Debug.LogError("UIDiceShopHandler: shopItemContainer is not assigned.", this);
                 return;
             }
 
             if (shopItemPrefab == null)
             {
-                Debug.LogError("UIShopHandler: shopItemPrefab is not assigned.", this);
+                Debug.LogError("UIDiceShopHandler: shopItemPrefab is not assigned.", this);
                 return;
             }
-            for (int i = ShopManager.Instance.ShopItems.Length - 1; i >= 0; i--)
+            for (int i = DiceShopManager.Instance.ShopItems.Length - 1; i >= 0; i--)
             {
-                ShopItem item = ShopManager.Instance.ShopItems[i];
+                ShopItem item = DiceShopManager.Instance.ShopItems[i];
                 GameObject newShopItem = Instantiate(shopItemPrefab, shopItemContainer.transform);
-                UIShopItem uiShopItem = newShopItem.GetComponent<UIShopItem>();
+                UIDiceShopItem uiShopItem = newShopItem.GetComponent<UIDiceShopItem>();
                 if (uiShopItem != null)
                 {
                     int totalPurchased = 0;
@@ -49,7 +49,7 @@ namespace MyGame
 
                     uiShopItem.Initialize(item, (purchasedItem) =>
                     {
-                        ShopManager.Instance.PurchaseItem(purchasedItem);
+                        DiceShopManager.Instance.PurchaseItem(purchasedItem);
                         InitItemDisplay(purchasedItem.Id);
                     }, totalPurchased);
 
@@ -57,7 +57,7 @@ namespace MyGame
                 }
                 else
                 {
-                    Debug.LogError("UIShopHandler: shopItemPrefab is missing a UIShopItem component.", this);
+                    Debug.LogError("UIDiceShopHandler: shopItemPrefab is missing a UIDiceShopItem component.", this);
                 }
             }
         }
@@ -72,14 +72,14 @@ namespace MyGame
                     uiItem.UpdateItemQuantity(data.totalPurchased);
 
                     ShopItem item = null;
-                    foreach (var si in ShopManager.Instance.ShopItems)
+                    foreach (var si in DiceShopManager.Instance.ShopItems)
                     {
                         if (si != null && si.Id == itemId) { item = si; break; }
                     }
 
                     if (item != null)
                     {
-                        BigInteger newPrice = (BigInteger)(item.price * Math.Pow(item.priceGrowthRate, data.totalPurchased));
+                        BigInteger newPrice = item.GetPrice(data.totalPurchased);
                         uiItem.UpdateItemPrice(newPrice);
                     }
                 }

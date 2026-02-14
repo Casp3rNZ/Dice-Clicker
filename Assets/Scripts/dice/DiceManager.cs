@@ -19,6 +19,9 @@ namespace MyGame
         public IReadOnlyList<Die> DiceList_ => DiceList;
         private int nextDiceToRollId = 0;
 
+        // Per-type round-robin indices so each dice tier cycles independently.
+        private readonly Dictionary<int, int> _nextRollByType = new Dictionary<int, int>();
+
         private void Awake()
         {
             if (dicePrefab == null)
@@ -80,15 +83,15 @@ namespace MyGame
             float scale = GetScaleForLevel(level);
             diceInstance.transform.localScale = Vector3.one * scale;
 
-            // Script-driven appearance: swap materials based on dice type.
+            // update materials based on dice type.
             if (diceInstance.TryGetComponent<DiceController>(out var diceController))
             {
                 Material materialForType = null;
                 Material pipMaterialForType = null;
-                if (ShopManager.Instance != null)
+                if (DiceShopManager.Instance != null)
                 {
-                    materialForType = ShopManager.Instance.GetMaterialForDiceType(type);
-                    pipMaterialForType = ShopManager.Instance.GetPipMaterialForDiceType(type);
+                    materialForType = DiceShopManager.Instance.GetMaterialForDiceType(type);
+                    pipMaterialForType = DiceShopManager.Instance.GetPipMaterialForDiceType(type);
                 }
 
                 if (materialForType != null)
@@ -190,6 +193,42 @@ namespace MyGame
             }
 
             Debug.LogWarning("DiceManager: No valid dice available to roll.");
+        }
+
+        /// <summary>
+        /// Rolls the next die of the given type (round-robin within that type).
+        /// Skips dice that are already mid-roll so the caller's accumulated
+        /// credit is not silently wasted.
+        /// Returns true if a die was rolled, false if none were available.
+        /// </summary>
+        public bool RollNextDiceOfType(int diceType)
+        {
+            // Build a lightweight list of indices matching this type
+            int count = DiceList.Count;
+            if (count == 0) return false;
+
+            if (!_nextRollByType.TryGetValue(diceType, out int startIndex))
+                startIndex = 0;
+
+            // Clamp in case dice were removed
+            if (startIndex >= count) startIndex = 0;
+
+            int index = startIndex;
+            for (int attempt = 0; attempt < count; attempt++)
+            {
+                var die = DiceList[index];
+                if (die != null && die.Dicetype == diceType
+                    && die.GameObject != null
+                    && die.GameObject.TryGetComponent<DiceController>(out var dc)
+                    && !dc.IsRolling)
+                {
+                    dc.Roll();
+                    _nextRollByType[diceType] = (index + 1) % count;
+                    return true;
+                }
+                index = (index + 1) % count;
+            }
+            return false;
         }
     }
 

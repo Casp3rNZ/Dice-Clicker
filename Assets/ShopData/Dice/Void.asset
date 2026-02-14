@@ -10,13 +10,16 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 7a4f66b50f708184888a771424d3c3d3, type: 3}
-  m_Name: Starter
+  m_Name: Void
   m_EditorClassIdentifier: Assembly-CSharp::ShopItem
-  Id: 1
-  Name: Marble
+  Id: 11
+  Name: Void
   Description: 
-  multiplier: 1
-  diceMaterial: {fileID: 2100000, guid: 2f9c4bbe7f210f94fb966d969ac83c1a, type: 2}
-  pipMaterial: {fileID: 2100000, guid: 19ca74d1f77aca34cae7536c424b7cc7, type: 2}
-  price: 5
-  priceIncreasePerPurchase: 10
+  price: 1000000
+  priceGrowthRate: 1.15
+  multiplier: 1024
+  diceMaterial: {fileID: 2100000, guid: 040dea0296a3126448bdecd84fd0a057, type: 2}
+  pipMaterial: {fileID: 2100000, guid: 1777d53c3404d20448c3c4c155cf24b7, type: 2}
+  autoClickBasePrice: 20000000
+  autoClickPriceGrowthRate: 1.25
+  autoClicksPerSecond: 0.05

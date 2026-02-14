@@ -10,13 +10,16 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 7a4f66b50f708184888a771424d3c3d3, type: 3}
-  m_Name: Void
+  m_Name: Gold
   m_EditorClassIdentifier: Assembly-CSharp::ShopItem
-  Id: 11
-  Name: Void
+  Id: 6
+  Name: Gold
   Description: 
-  multiplier: 1024
-  diceMaterial: {fileID: 2100000, guid: 040dea0296a3126448bdecd84fd0a057, type: 2}
-  pipMaterial: {fileID: 2100000, guid: 1777d53c3404d20448c3c4c155cf24b7, type: 2}
-  price: 1000000
+  price: 5000
   priceGrowthRate: 1.15
+  multiplier: 32
+  diceMaterial: {fileID: 2100000, guid: dd2cae874a9b6b14281ad2a410b39df1, type: 2}
+  pipMaterial: {fileID: 2100000, guid: 8ab34b9eda2bc9245b245835a8481edf, type: 2}
+  autoClickBasePrice: 100000
+  autoClickPriceGrowthRate: 1.25
+  autoClicksPerSecond: 0.05
