@@ -104,30 +104,6 @@ namespace MyGame
 
         private void Update()
         {
-            // Mouse (PC)
-            if (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
-            {
-                UnityEngine.Vector2 pos = Mouse.current.position.ReadValue();
-                if (!IsScreenPositionOverUI(pos))
-                    RollDice();
-            }
-
-            // Touch (mobile)
-            if (Touchscreen.current != null)
-            {
-                foreach (var touch in Touchscreen.current.touches)
-                {
-                    if (touch.press.wasPressedThisFrame)
-                    {
-                        UnityEngine.Vector2 pos = touch.position.ReadValue();
-                        if (!IsScreenPositionOverUI(pos))
-                        {
-                            RollDice();
-                        }
-                        break; // only one roll per frame
-                    }
-                }
-            }
             // Update UI score
             if (scoreText != null)
             {
@@ -150,26 +126,6 @@ namespace MyGame
                 AdjustScoreFontSize(scoreText.text);
                 scoreText.GetComponent<ImageAligner>()?.AlignImage();
             }
-        }
-
-        public void RollDice()
-        {
-            diceManager?.RollNextDice();
-        }
-
-        private static bool IsScreenPositionOverUI(UnityEngine.Vector2 screenPosition)
-        {
-            if (EventSystem.current == null)
-                return false;
-
-            var eventData = new PointerEventData(EventSystem.current)
-            {
-                position = screenPosition
-            };
-
-            var results = new List<RaycastResult>();
-            EventSystem.current.RaycastAll(eventData, results);
-            return results.Count > 0;
         }
 
         public void AddToScore(BigInteger amount)
