@@ -13,6 +13,8 @@ namespace MyGame
         [Header("Saves")]
         [SerializeField] private SaveManager saveManager;
 
+        public static DiceManager Instance { get; private set; }
+
         private readonly List<Die> DiceList = new List<Die>();
         public event System.Action<Die> OnDieCreated;
 
@@ -24,6 +26,14 @@ namespace MyGame
 
         private void Awake()
         {
+            if (Instance != null && Instance != this)
+            {
+                Debug.LogWarning("Multiple DiceManager instances detected. Destroying duplicate.", this);
+                Destroy(this);
+                return;
+            }
+            Instance = this;
+
             if (dicePrefab == null)
             {
                 Debug.LogError("DiceManager: dicePrefab is not assigned.", this);
@@ -78,7 +88,6 @@ namespace MyGame
             Vector3 spawnPosition = spawnBox.transform.TransformPoint(randomPoint);
             Quaternion spawnRotation = Random.rotation;
             GameObject diceInstance = Instantiate(dicePrefab, spawnPosition, spawnRotation);
-
             // Apply scale based on level (caps at 500%)
             float scale = GetScaleForLevel(level);
             diceInstance.transform.localScale = Vector3.one * scale;
@@ -86,6 +95,7 @@ namespace MyGame
             // update materials based on dice type.
             if (diceInstance.TryGetComponent<DiceController>(out var diceController))
             {
+                diceController.SetDieID(id);
                 Material materialForType = null;
                 Material pipMaterialForType = null;
                 if (DiceShopManager.Instance != null)
@@ -230,6 +240,29 @@ namespace MyGame
             }
             return false;
         }
+
+        /// <summary>
+        /// Repositions the given die to a random point within the spawn box.
+        /// Used by DiceController if a dice goes OOB.
+        /// </summary>
+        /// <param name="die">The die to reposition.</param>
+        public void RePositionDie(int Id)
+        {
+            Die die = DiceList.Find(d => d.Id == Id);
+            if (die == null || die.GameObject == null)
+            {
+                Debug.LogWarning($"DiceManager: Cannot reposition die with ID {Id} - not found.");
+                return;
+            }
+
+            Vector3 randomPoint = new Vector3(
+                Random.Range(-0.5f, 0.5f),
+                0,
+                Random.Range(-0.5f, 0.5f)
+                );
+            Vector3 spawnPosition = spawnBox.transform.TransformPoint(randomPoint);
+            die.GameObject.transform.position = spawnPosition;
+        }   
     }
 
     [System.Serializable]

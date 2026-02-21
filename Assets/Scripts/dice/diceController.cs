@@ -5,8 +5,13 @@ namespace MyGame
 {
     public class DiceController : MonoBehaviour
     {
-
         public event System.Action<int> OnDiceSettled;
+        private int dieID;
+
+        public void SetDieID(int ID)
+        {
+            dieID = ID;
+        }
 
         [Header("Pip Settings")]
         [SerializeField] private float pipSize = 0.08f;
@@ -22,7 +27,7 @@ namespace MyGame
 
         private bool isRolling = false;
         public bool IsRolling => isRolling;
-        private bool isInitialized = false;
+        public bool isInitialized = false;
         private Rigidbody rb;
         private Material diceMaterial;
         private Material pipMaterial;
@@ -232,19 +237,23 @@ namespace MyGame
                 UnityEngine.Debug.LogWarning("DiceController: No Rigidbody found.");
                 return;
             }
-
-            AudioManager.Instance.PlaySFX_DiceRoll();
             isRolling = true;
-            Vector3 randomForce = new Vector3(
-                Random.Range(-5f, 5f),
-                Random.Range(15f, 50f),
-                Random.Range(-5f, 5f));
+            AudioManager.Instance.PlaySFX_DiceRoll();
+            Vector3 wishDirection = WaypointManager.Instance.GetDiceWishDirection(this.transform.position);
+            float forceStrength = 25f;
+            Vector3 force = wishDirection * forceStrength;
+
+            force += new Vector3(
+                Random.Range(-2f, 2f),
+                Random.Range(20f, 45f),
+                Random.Range(-2f, 2f));
+
             Vector3 randomTorque = new Vector3(
                 Random.Range(-10f, 10f),
                 Random.Range(-10f, 10f),
                 Random.Range(-10f, 10f));
 
-            rb.AddForce(randomForce, ForceMode.Impulse);
+            rb.AddForce(force, ForceMode.Impulse);
             rb.AddTorque(randomTorque, ForceMode.Impulse);
             StopAllCoroutines();
             StartCoroutine(WaitForSettleThenReport());
@@ -303,6 +312,11 @@ namespace MyGame
         private void OnCollisionEnter(Collision collision)
         {
             if (AudioManager.Instance == null) return;
+            if(collision.gameObject.CompareTag("FallTrap") || collision.gameObject.CompareTag("outerBarrier"))
+            {
+                DiceManager.Instance.RePositionDie(dieID); 
+                return;
+            }
             if (!collision.gameObject.CompareTag("ground") && !collision.gameObject.CompareTag("dice"))
                 return;
 
@@ -323,5 +337,6 @@ namespace MyGame
                 AudioManager.Instance.PlaySFX_DiceToDiceCollission(volume, 0.2f, pitch);
             }
         }
+
     }
 }

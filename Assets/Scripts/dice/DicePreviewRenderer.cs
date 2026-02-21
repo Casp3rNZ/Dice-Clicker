@@ -164,6 +164,8 @@ namespace MyGame
             if (diceGO.TryGetComponent<Rigidbody>(out var rb))
                 Destroy(rb);
 
+            diceGO.tag = "Untagged";
+
             // Remove all colliders (including pip colliders) — no physics interaction needed
             foreach (var col in diceGO.GetComponentsInChildren<Collider>())
                 Destroy(col);

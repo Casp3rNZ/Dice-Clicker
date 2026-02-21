@@ -6,16 +6,19 @@ TagManager:
   tags:
   - dice
   - ground
-  - WP1
-  - WP2
-  - WP3
-  - WP4
-  - WP5
-  - WP6
-  - WP7
-  - WP8
-  - WP9
-  - WP10
+  - WP_1
+  - WP_2
+  - WP_3
+  - WP_4
+  - WP_5
+  - FallTrap
+  - barrier
+  - WP_6
+  - WP_7
+  - WP_8
+  - WP_9
+  - WP_10
+  - outerBarrier
   layers:
   - Default
   - TransparentFX

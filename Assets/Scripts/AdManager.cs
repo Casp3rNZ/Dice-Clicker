@@ -1,6 +1,11 @@
 using UnityEngine;
 using System;
+using System.Collections;
+using System.Numerics;
 using UnityEngine.UI;
+using Unity.Services.LevelPlay;
+
+
 namespace MyGame
 {
     public class AdManager : MonoBehaviour
@@ -8,20 +13,25 @@ namespace MyGame
         public static AdManager Instance { get; private set; }
 
         [Header("LevelPlay Rewarded Ad Prefabs")]
-        [SerializeField] private GameObject rewardedAdPromptPrefab;
-        [SerializeField] private GameObject confirmationWindowPrefab;
+        [SerializeField] private UIRewAdIcon rewardedAdPrompt;
+        [SerializeField] private UIRewAdConfirmWindow confirmationWindowController;
         [SerializeField] private Transform uiParent;
 
         [Header("Managers")]
         [SerializeField] private GameManager gameManager;
 
-        private GameObject _activePrompt;
-        private GameObject _activeConfirmation;
-        private RewardType _pendingRewardType;
+        // UI elements
+
+        private RewardType _pendingRewardType = 0;
+
+        // LevelPlay rewarded ad instance
+        private LevelPlayRewardedAd _RewardedAd_30MinInc;
+        private string LevelPlayAppID = "254056a35";
+        private string LevelPlayRewardedAdID_30MinInc = "4thkspy91dt93hd2";
 
         public enum RewardType
         {
-            ThirtyMinutesAutoClickerIncome = 0,
+            TimedIncome = 0,
             // TODO: Add more reward types 
         }
 
@@ -33,62 +43,112 @@ namespace MyGame
                 return;
             }
             Instance = this;
+            // Register OnInitFailed and OnInitSuccess listeners
+            LevelPlay.OnInitSuccess += AdsInitSuccess;
+            LevelPlay.OnInitFailed += AdsInitFailed;
+
+            // SDK init
+            LevelPlay.Init(LevelPlayAppID);
         }
 
-        public void ShowRewardedAdPrompt(RewardType rewardType)
+        private void AdsInitSuccess(LevelPlayConfiguration config)
         {
-            if (_activePrompt != null) Destroy(_activePrompt);
-            _pendingRewardType = rewardType;
-            _activePrompt = Instantiate(rewardedAdPromptPrefab, uiParent);
-            var button = _activePrompt.GetComponentInChildren<Button>();
-            if (button != null)
-                button.onClick.AddListener(OnPromptClicked);
+            LevelPlay.LaunchTestSuite();
+            _RewardedAd_30MinInc = new LevelPlayRewardedAd(LevelPlayRewardedAdID_30MinInc);
+            // Register to Rewarded events
+            _RewardedAd_30MinInc.OnAdLoaded += AdLoaded;
+            // RewardedAd.OnAdLoadFailed += RewardedOnAdLoadFailedEvent;
+            // RewardedAd.OnAdDisplayed += RewardedOnAdDisplayedEvent;
+            // RewardedAd.OnAdDisplayFailed += RewardedOnAdDisplayFailedEvent;
+            _RewardedAd_30MinInc.OnAdRewarded += RewardedAdCompleted; 
+            // RewardedAd.OnAdClosed += RewardedOnAdClosedEvent;
+            // // Optional 
+            // RewardedAd.OnAdClicked += RewardedOnAdClickedEvent;
+            // RewardedAd.OnAdInfoChanged += RewardedOnAdInfoChangedEvent;
+            StartCoroutine(LoadAdAfterDelay(60f));
+            Debug.Log("LevelPlay SDK initialized successfully.");
+        }
+
+        private void AdLoaded(LevelPlayAdInfo adInfo)
+        {
+            // Log ad info for last played ad (optional)
+            string auctionID = adInfo.AuctionId;
+            string adUnit = adInfo.AdUnitId;
+            string country = adInfo.Country;
+            string ab = adInfo.Ab;
+            string segmentName = adInfo.SegmentName;
+            string adNetwork = adInfo.AdNetwork;
+            string instanceName = adInfo.InstanceName;
+            string instanceId = adInfo.InstanceId;
+            double? revenue = adInfo.Revenue;
+            string precision = adInfo.Precision;
+            string encryptedCPM = adInfo.EncryptedCPM;
+            LevelPlayAdSize adSize = adInfo.AdSize;
+            // Ad loaded, display popup
+            rewardedAdPrompt.ShowIcon();
+        }
+
+        public void ShowAd()
+        {
+            if (_RewardedAd_30MinInc.IsAdReady())
+            {
+                rewardedAdPrompt.HideIcon();
+                confirmationWindowController.Close();
+                _RewardedAd_30MinInc.ShowAd();
+            }
+            else
+            {
+                Debug.Log("Rewarded Ad not ready");
+            }
+        }
+
+        private void AdsInitFailed(LevelPlayInitError error)
+        {
+            Debug.LogError($"LevelPlay SDK initialization failed: {error}");
         }
 
         private void OnPromptClicked()
         {
-            if (_activeConfirmation != null) Destroy(_activeConfirmation);
-            _activeConfirmation = Instantiate(confirmationWindowPrefab, uiParent);
+            confirmationWindowController.Open();
         }
 
-        public void ShowLevelPlayRewardedAd(RewardType rewardType)
+        private void RewardedAdCompleted(LevelPlayAdInfo adInfo, LevelPlayReward reward)
         {
-            // TODO: actual LevelPlay API call
-            Debug.Log($"Showing rewarded ad for reward: {rewardType}");
-            // Simulate ad watched successfully:
-            OnRewardedAdCompleted(rewardType);
-        }
-
-        private void OnRewardedAdCompleted(RewardType rewardType)
-        {
-            switch (rewardType)
+            switch (_pendingRewardType)
             {
-                case RewardType.ThirtyMinutesAutoClickerIncome:
-                    GrantThirtyMinutesAutoClickerIncome();
+                case RewardType.TimedIncome:
+                    GrantTimedIncome(reward.Amount);
+                    Debug.Log($"Granted timed income reward: {reward.Amount}.");
                     break;
                 // Add more cases for other reward types
             }
+            StartCoroutine(LoadAdAfterDelay(60f)); // Preload next ad after 60 seconds
         }
 
-        private void GrantThirtyMinutesAutoClickerIncome()
+        private IEnumerator LoadAdAfterDelay(float delaySeconds)
+        {
+            yield return new WaitForSeconds(delaySeconds);
+            _RewardedAd_30MinInc.LoadAd();
+            Debug.Log($"AdManager: Loaded next rewarded ad after {delaySeconds} seconds.");
+        }
+
+        private void GrantTimedIncome(int minutes = 30)
         {
             if ( gameManager == null)
             {
                 Debug.LogError("AdManager: Missing manager references for reward.");
                 return;
             }
-            double totalIncome = CalculateAutoClickerIncome(30 * 60); // 30 minutes in seconds
-            gameManager.AddToScore(new System.Numerics.BigInteger(totalIncome));
-            Debug.Log($"Granted {totalIncome} autoclicker income for 30 minutes.");
+            BigInteger totalIncome = CalculateAutoClickerIncome(minutes);
+            gameManager.AddToScore(totalIncome);
+            Debug.Log($"Granted {totalIncome} autoclicker income for {minutes} minutes.");
         }
 
-        private double CalculateAutoClickerIncome(double seconds)
+        private BigInteger CalculateAutoClickerIncome(double minutes)
         {
-            // This is a placeholder. Replace with your actual autoclicker income calculation logic.
-            // Example: sum all tiers' CPS * seconds * average dice value
-            double total = 0;
-            // TODO: Implement actual calculation using AutoClickerManager data
-            return total;
+            BigInteger avgIncome_60Sec = gameManager.GetAverageIncomePerSecondLast60Seconds();
+            BigInteger totalIncome = avgIncome_60Sec * 60 * (BigInteger)minutes;
+            return totalIncome;
         }
     }
 }

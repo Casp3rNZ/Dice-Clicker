@@ -30,6 +30,15 @@ namespace MyGame
         private BigInteger score = BigInteger.Zero;
         private BigInteger displayedScore = BigInteger.Zero;
 
+        // For tracking income over the last 60 seconds
+        private struct IncomeEntry
+        {
+            public float time;
+            public BigInteger amount;
+        }
+        private readonly Queue<IncomeEntry> incomeHistory = new Queue<IncomeEntry>();
+        private BigInteger incomeSumLast60s = BigInteger.Zero;
+
         private readonly HashSet<DiceController> subscribedDice = new HashSet<DiceController>();
 
         private void OnEnable()
@@ -132,6 +141,42 @@ namespace MyGame
         {
             score += amount;
             saveManager?.UpdateScore(score);
+            TrackIncome(amount);
+        }
+
+        private void TrackIncome(BigInteger amount)
+        {
+            float now = Time.time;
+            incomeHistory.Enqueue(new IncomeEntry { time = now, amount = amount });
+            incomeSumLast60s += amount;
+
+            // Remove entries older than 60 seconds
+            while (incomeHistory.Count > 0 && now - incomeHistory.Peek().time > 60f)
+            {
+                incomeSumLast60s -= incomeHistory.Dequeue().amount;
+            }
+        }
+
+        /// <summary>
+        /// Returns the total income earned over the last 60 seconds.
+        /// </summary>
+        private BigInteger GetIncomeLast60Seconds()
+        {
+            // Clean up old entries in case this is called infrequently
+            float now = Time.time;
+            while (incomeHistory.Count > 0 && now - incomeHistory.Peek().time > 60f)
+            {
+                incomeSumLast60s -= incomeHistory.Dequeue().amount;
+            }
+            return incomeSumLast60s;
+        }
+
+        /// <summary>
+        /// Returns the average income per second over the last 60 seconds.
+        /// </summary>
+        public BigInteger GetAverageIncomePerSecondLast60Seconds()
+        {
+            return GetIncomeLast60Seconds() / 60;
         }
 
         public void SetScore(BigInteger newScore)
