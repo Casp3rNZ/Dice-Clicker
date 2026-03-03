@@ -13,11 +13,6 @@ namespace MyGame
     {
         public static AutoClickShopManager Instance { get; private set; }
 
-        [SerializeField] private SaveManager saveManager;
-        [SerializeField] private GameManager gameManager;
-        [SerializeField] private AudioManager audioManager;
-        [SerializeField] private UIAutoClickShopHandler uiHandler;
-
         private void Awake()
         {
             if (Instance != null && Instance != this)
@@ -27,34 +22,6 @@ namespace MyGame
                 return;
             }
             Instance = this;
-            if (saveManager == null)
-            {
-                Debug.LogError("AutoClickShopManager: saveManager is not assigned.", this);
-                return;
-            }
-            if (gameManager == null)
-            {
-                Debug.LogError("AutoClickShopManager: gameManager is not assigned.", this);
-                return;
-            }
-            if (audioManager == null)
-            {
-                Debug.LogError("AutoClickShopManager: audioManager is not assigned.", this);
-                return;
-            }
-            if (uiHandler == null)
-            {
-                Debug.LogError("AutoClickShopManager: uiHandler is not assigned.", this);
-                return;
-            }
-        }
-
-        /// <summary>
-        /// The shop items (dice tiers) are sourced from <see cref="DiceShopManager"/>.
-        /// </summary>
-        public ShopItem[] GetShopItems()
-        {
-            return DiceShopManager.Instance != null ? DiceShopManager.Instance.ShopItems : null;
         }
 
         /// <summary>
@@ -64,16 +31,6 @@ namespace MyGame
         public static BigInteger GetAutoClickPrice(ShopItem item, int purchased)
         {
             return item.GetAutoClickPrice(purchased);
-        }
-
-        /// <summary>
-        /// Reveals the auto-click shop entry for the given dice tier.
-        /// Called by <see cref="DiceShopManager"/> on first dice purchase.
-        /// </summary>
-        public void RevealAutoClickItem(int diceTypeId)
-        {
-            if (uiHandler != null)
-                uiHandler.RevealItem(diceTypeId);
         }
 
         /// <summary>
@@ -87,21 +44,21 @@ namespace MyGame
                 return;
             }
 
-            BigInteger currentScore = saveManager.GetScore();
-            int purchased = saveManager.GetAutoClickPurchaseCount(item.Id);
+            BigInteger currentScore = SaveManager.Instance.GetScore();
+            int purchased = SaveManager.Instance.GetAutoClickPurchaseCount(item.Id);
             BigInteger itemPrice = GetAutoClickPrice(item, purchased);
 
             if (currentScore < itemPrice)
             {
-                audioManager.PlaySFX_ShopFail(0.8f);
+                AudioManager.Instance.PlaySFX_ShopFail(0.8f);
                 return;
             }
 
             // Deduct funds
-            gameManager.AddToScore(-itemPrice);
+            GameManager.Instance.AddToScore(-itemPrice);
 
             // Record the purchase
-            saveManager.RecordAutoClickPurchase(item.Id);
+            SaveManager.Instance.RecordAutoClickPurchase(item.Id);
 
             // Update auto-clicker runtime rate for this dice tier
             if (AutoClickerManager.Instance != null)
@@ -110,12 +67,12 @@ namespace MyGame
             // Update shop UI
             int newCount = purchased + 1;
             BigInteger nextPrice = GetAutoClickPrice(item, newCount);
-            uiHandler.UpdateItemPrice(item, nextPrice);
-            uiHandler.UpdateItemQuantity(item, newCount);
-            uiHandler.UpdateItemCPS(item, item.autoClicksPerSecond * newCount);
+            GameUIManager.Instance.UpdateACShopItemUI_Price(item.Id, nextPrice);
+            GameUIManager.Instance.UpdateACShopItemUI_Quantity(item.Id, newCount);
+            GameUIManager.Instance.UpdateACShopItemUI_CPS(item.Id, item.autoClicksPerSecond * newCount);
 
             // Play purchase sound
-            audioManager.PlaySFX_ShopSuccess(0.8f, 0.1f);
+            AudioManager.Instance.PlaySFX_ShopSuccess(0.8f, 0.1f);
 
             Debug.Log($"Purchased auto-click for {item.Name} (total: {newCount})");
         }

@@ -20,8 +20,16 @@ public class WaypointManager : MonoBehaviour
         }
 
         waypoints = FindWaypoints();
-        waypoints = waypoints.OrderBy(wp => int.Parse(wp.tag.Substring(3))).ToList();
-        Debug.Log("Waypoints found: " + waypoints);
+        // Sort by number in GameObject name (e.g., "WP_1", "WP_2", ...)
+        waypoints = waypoints.OrderBy(wp =>
+        {
+            string name = wp.name;
+            int idx = name.LastIndexOf("_", System.StringComparison.Ordinal);
+            if (idx >= 0 && int.TryParse(name.Substring(idx + 1), out int num))
+                return num;
+            return int.MaxValue;
+        }).ToList();
+        Debug.Log("Waypoints found: " + string.Join(", ", waypoints.Select(wp => wp.name)));
     }
 
     private List<GameObject> FindWaypoints()

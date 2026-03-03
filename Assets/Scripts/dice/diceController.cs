@@ -245,7 +245,7 @@ namespace MyGame
 
             force += new Vector3(
                 Random.Range(-2f, 2f),
-                Random.Range(20f, 45f),
+                Random.Range(30f, 65f),
                 Random.Range(-2f, 2f));
 
             Vector3 randomTorque = new Vector3(
@@ -311,7 +311,6 @@ namespace MyGame
 
         private void OnCollisionEnter(Collision collision)
         {
-            if (AudioManager.Instance == null) return;
             if(collision.gameObject.CompareTag("FallTrap") || collision.gameObject.CompareTag("outerBarrier"))
             {
                 DiceManager.Instance.RePositionDie(dieID); 
@@ -319,6 +318,7 @@ namespace MyGame
             }
             if (!collision.gameObject.CompareTag("ground") && !collision.gameObject.CompareTag("dice"))
                 return;
+
 
             // Skip weak impacts and enforce cooldown to avoid SFX spam
             if (collision.relativeVelocity.sqrMagnitude < minImpulse * minImpulse) return;

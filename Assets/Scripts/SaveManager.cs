@@ -33,7 +33,7 @@ namespace MyGame
         {
             if(gameManager == null)
             {
-                UnityEngine.Debug.LogError("SaveManager: gameManager is not assigned.", this);
+                Debug.LogError("SaveManager: gameManager is not assigned.", this);
                 return;
             }
             if (Instance == null)
@@ -41,14 +41,14 @@ namespace MyGame
                 Instance = this;
                 DontDestroyOnLoad(gameObject);
                 EnsureSavePathInitialized();
-                UnityEngine.Debug.Log($"Save path: {_saveFilePath}");
+                Debug.Log($"Save path: {_saveFilePath}");
                 LoadGame();
 
                 BigInteger loadedScore = ParseScore(_currentSaveData.playerScore);
                 if (loadedScore > BigInteger.Zero)
                 {
                     gameManager.SetScore(loadedScore);
-                    UnityEngine.Debug.Log($"Loaded score: {loadedScore}");
+                    Debug.Log($"Loaded score: {loadedScore}");
                 }
 
                 if (autoSaveEnabled)
@@ -118,7 +118,7 @@ namespace MyGame
             
             string jsonData = JsonUtility.ToJson(_currentSaveData, true);
             File.WriteAllText(_saveFilePath, jsonData);
-            UnityEngine.Debug.Log($"Game Saved: {_saveFilePath}");
+            Debug.Log($"Game Saved: {_saveFilePath}");
         }
 
         public void LoadGame()
@@ -129,7 +129,7 @@ namespace MyGame
             {
                 string jsonData = File.ReadAllText(_saveFilePath);
                 _currentSaveData = JsonUtility.FromJson<GameSaveData>(jsonData);
-                UnityEngine.Debug.Log("Save Loaded.");
+                Debug.Log("Save Loaded.");
             }
             else
             {
@@ -141,7 +141,7 @@ namespace MyGame
                             diceLevels = new List<int> { 1 }, 
                             totalPurchased = 1 }
                 };
-                UnityEngine.Debug.Log($"No save file found at '{_saveFilePath}', creating new data.");
+                Debug.Log($"No save file found at '{_saveFilePath}', creating new data.");
             }
         }
 

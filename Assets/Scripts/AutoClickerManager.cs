@@ -142,8 +142,6 @@ namespace MyGame
 
         private void Update()
         {
-            if (diceManager == null) return;
-
             int tierCount = _tiers.Count;
             if (tierCount == 0) return;
 

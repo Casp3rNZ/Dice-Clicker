@@ -36,7 +36,7 @@ public class ShopItem : ScriptableObject
     /// <summary>
     /// Calculates incremental price: basePrice × growthRate ^ totalPurchased.
     /// </summary>
-    public static BigInteger CalculatePrice(int basePrice, float growthRate, int totalPurchased)
+    private static BigInteger CalculatePrice(int basePrice, float growthRate, int totalPurchased)
     {
         if (totalPurchased <= 0) return new BigInteger(basePrice);
         return new BigInteger(basePrice * Math.Pow(growthRate, totalPurchased));

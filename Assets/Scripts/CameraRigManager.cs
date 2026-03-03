@@ -41,7 +41,7 @@ namespace MyGame
             averagePosition /= DiceObjects.Count;
 
             // restrict camera to offsets horizontal plane 
-            averagePosition.y = 0f;
+            //averagePosition.y = 0f;
 
 
             // Get the current waypoint position
@@ -53,8 +53,10 @@ namespace MyGame
             Vector3 desiredPosition = averagePosition + dynamicOffset;
             transform.position = Vector3.Lerp(transform.position, desiredPosition, followSpeed * Time.deltaTime);
 
-            // Optionally, advance waypoint if close
-            if(Vector3.Distance(averagePosition, waypointPosition) < 10f)
+            // advance waypoint if close
+            averagePosition.y = 0f;
+            waypointPosition.y = 0f;
+            if(Vector3.Distance(averagePosition, waypointPosition) < 15f)
             {
                 WaypointManager.Instance.MoveToNextWaypoint();
             }

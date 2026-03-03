@@ -9,26 +9,14 @@ namespace MyGame
 {
     public class GameManager : MonoBehaviour
     {
+        public static GameManager Instance { get; private set; }
         [SerializeField] private DiceManager diceManager;
         [SerializeField] private SaveManager saveManager;
         [SerializeField] private AudioManager audioManager;
-
         [SerializeField] private PopupTextHandler popupTextHandler;
         [SerializeField] private UnityEngine.Vector3 popupTextOffset = new UnityEngine.Vector3(0f, 1.2f, 0f);
         [SerializeField] private GameObject uiCanvas;
-        [SerializeField] private TMP_Text scoreText;
-        [Header("Score Font Scaling")]
-        [Tooltip("Font size when the score has very few digits (≤6).")]
-        [SerializeField] private float maxFontSize = 72f;
-        [Tooltip("Minimum font size no matter how many digits.")]
-        [SerializeField] private float minFontSize = 30f;
-        [Tooltip("Number of digits at which font begins shrinking.")]
-        [SerializeField] private int shrinkStartDigits = 7;
-        [Tooltip("Number of digits at which font reaches minimum size.")]
-        [SerializeField] private int shrinkEndDigits = 30;
-
         private BigInteger score = BigInteger.Zero;
-        private BigInteger displayedScore = BigInteger.Zero;
 
         // For tracking income over the last 60 seconds
         private struct IncomeEntry
@@ -43,6 +31,17 @@ namespace MyGame
 
         private void OnEnable()
         {
+            if(Instance == null)
+            {
+                Instance = this;
+            }
+            else
+            {
+                Debug.LogWarning("Multiple instances of GameManager detected. Destroying duplicate.", this);
+                Destroy(gameObject);
+                return;
+            }
+
             if (diceManager != null)
                 diceManager.OnDieCreated += HandleDieCreated;
         }
@@ -109,32 +108,6 @@ namespace MyGame
                 if (die.GameObject != null)
                     ShowPopupText(modifiedResult, die.GameObject.transform.position);
             };
-        }
-
-        private void Update()
-        {
-            // Update UI score
-            if (scoreText != null)
-            {
-                if(displayedScore == score)
-                    return;
-                if (displayedScore > score)
-                {
-                    BigInteger gap = displayedScore - score;
-                    displayedScore -= BigInteger.One + gap / 10;
-                    if (displayedScore < score) displayedScore = score;
-                }
-                else
-                {
-                    audioManager.PlaySFX_ScoreCounterTick(0.05f);
-                    BigInteger gap = score - displayedScore;
-                    displayedScore += BigInteger.One + gap / 10;
-                    if (displayedScore > score) displayedScore = score;
-                }
-                scoreText.text = FormatBigInteger(displayedScore);
-                AdjustScoreFontSize(scoreText.text);
-                scoreText.GetComponent<ImageAligner>()?.AlignImage();
-            }
         }
 
         public void AddToScore(BigInteger amount)
@@ -207,7 +180,7 @@ namespace MyGame
         /// <summary>
         /// Formats a BigInteger with thousand separators (e.g. 1,234,567).
         /// </summary>
-        private static string FormatBigInteger(BigInteger value)
+        public static string FormatBigInteger(BigInteger value)
         {
             // For values that fit in a long, use built-in formatting
             if (value >= long.MinValue && value <= long.MaxValue)
@@ -230,24 +203,6 @@ namespace MyGame
 
             string formatted = new string(result, ri + 1, result.Length - ri - 1);
             return negative ? "-" + formatted : formatted;
-        }
-
-        /// <summary>
-        /// Scales the score TMP_Text font size so the number always fits in one line.
-        /// Lerps between maxFontSize and minFontSize based on digit count.
-        /// </summary>
-        private void AdjustScoreFontSize(string formattedText)
-        {
-            if (scoreText == null) return;
-            if (formattedText.Length <= shrinkStartDigits)
-            {
-                scoreText.fontSize = maxFontSize;
-                return;
-            }
-
-            // Linearly interpolate between max and min over the digit range
-            float t = Mathf.InverseLerp(shrinkStartDigits, shrinkEndDigits, formattedText.Length);
-            scoreText.fontSize = Mathf.Lerp(maxFontSize, minFontSize, t);
         }
     }
 }
