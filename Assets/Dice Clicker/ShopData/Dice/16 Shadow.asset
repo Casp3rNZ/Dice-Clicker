@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7a4f66b50f708184888a771424d3c3d3, type: 3}
+  m_Name: 16 Shadow
+  m_EditorClassIdentifier: Assembly-CSharp::ShopItem
+  Id: 16
+  Name: Shadow
+  Description: 
+  price: 500000000000
+  priceGrowthRate: 1.15
+  multiplier: 65536
+  diceMaterial: {fileID: 2100000, guid: 03cca608299b3574caf9dcf6dbb03ac4, type: 2}
+  pipMaterial: {fileID: 2100000, guid: 19ca74d1f77aca34cae7536c424b7cc7, type: 2}
+  autoClickBasePrice: 2147483647
+  autoClickPriceGrowthRate: 1.25
+  autoClicksPerSecond: 0.05

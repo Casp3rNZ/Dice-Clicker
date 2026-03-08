@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7a4f66b50f708184888a771424d3c3d3, type: 3}
+  m_Name: 2 Wood
+  m_EditorClassIdentifier: Assembly-CSharp::ShopItem
+  Id: 2
+  Name: Wood
+  Description: 
+  price: 50
+  priceGrowthRate: 1.15
+  multiplier: 2
+  diceMaterial: {fileID: 2100000, guid: 2f291ffbf5f9e9c45b0bcdfbf49d6f75, type: 2}
+  pipMaterial: {fileID: 2100000, guid: 757dc787ecc871c48bcc1991d61d2ddb, type: 2}
+  autoClickBasePrice: 1000
+  autoClickPriceGrowthRate: 1.25
+  autoClicksPerSecond: 0.05

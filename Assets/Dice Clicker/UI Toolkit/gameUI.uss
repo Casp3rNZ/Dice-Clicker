@@ -1,0 +1,13 @@
+:root {
+}
+
+.titlePanel {
+    flex-grow: 1;
+    position: relative;
+    height: auto;
+    width: 100%;
+    background-color: rgb(182, 141, 39);
+    align-items: center;
+    justify-content: center;
+    -unity-material: url("");
+}
