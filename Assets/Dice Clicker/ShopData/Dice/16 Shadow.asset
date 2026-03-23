@@ -18,8 +18,8 @@ MonoBehaviour:
   price: 500000000000
   priceGrowthRate: 1.15
   multiplier: 65536
-  diceMaterial: {fileID: 2100000, guid: 03cca608299b3574caf9dcf6dbb03ac4, type: 2}
-  pipMaterial: {fileID: 2100000, guid: 19ca74d1f77aca34cae7536c424b7cc7, type: 2}
+  diceMaterial: {fileID: 2100000, guid: 4b9ecc291c7a72e438c79380118e2090, type: 2}
+  pipMaterial: {fileID: 2100000, guid: 6d18fa706488408408dd19f6c0cea1f9, type: 2}
   autoClickBasePrice: 2147483647
   autoClickPriceGrowthRate: 1.25
   autoClicksPerSecond: 0.05

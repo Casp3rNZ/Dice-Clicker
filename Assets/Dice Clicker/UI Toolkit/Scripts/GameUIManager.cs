@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
+using Unity.Android.Gradle.Manifest;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -157,7 +158,7 @@ namespace MyGame
                 }
                 else
                 {
-                    priceLabel.text = BigInteger.Parse(shopItem.price).ToString("N0");
+                    priceLabel.text = GameManager.FormatBigInteger(BigInteger.Parse(shopItem.price));
                 }
 
                 if (nameLabel == null)
@@ -245,7 +246,7 @@ namespace MyGame
                 }
                 else
                 {
-                    priceLabel.text = AutoClickShopManager.GetAutoClickPrice(shopItem, 0).ToString();
+                    priceLabel.text = GameManager.FormatBigInteger(shopItem.GetAutoClickPrice(0));
                 }
                 if (nameLabel == null)
                 {
@@ -295,7 +296,7 @@ namespace MyGame
                 itemData data = SaveManager.Instance.GetItemData(shopItem.Id);
                 if (data != null)
                 {
-                    UpdateACShopItemUI_Price(shopItem.Id, AutoClickShopManager.GetAutoClickPrice(shopItem, data.totalPurchased));
+                    UpdateACShopItemUI_Price(shopItem.Id, shopItem.GetAutoClickPrice(data.totalPurchased));
                     UpdateACShopItemUI_Quantity(shopItem.Id, data.totalPurchased);
                     if(data.totalPurchased > 0)
                         UpdateACShopItemUI_CPS(shopItem.Id, shopItem.autoClicksPerSecond * data.totalPurchased);
@@ -644,7 +645,7 @@ namespace MyGame
 
             itemData itemData = SaveManager.Instance.GetItemData(item.Id);
             int purchased = itemData != null ? itemData.totalPurchased : 0;
-            BigInteger itemPrice = AutoClickShopManager.GetAutoClickPrice(item, purchased);
+            BigInteger itemPrice = item.GetAutoClickPrice(purchased);
             if (currentScore < itemPrice)
             {
                 AudioManager.Instance.PlaySFX_ShopFail(0.8f);
@@ -659,7 +660,7 @@ namespace MyGame
             if (AutoClickerManager.Instance != null)
                 AutoClickerManager.Instance.RefreshTier(item.Id, item.autoClicksPerSecond * (purchased + 1));
             // Update Shop UI
-            BigInteger nextPrice = AutoClickShopManager.GetAutoClickPrice(item, purchased + 1);
+            BigInteger nextPrice = item.GetAutoClickPrice(purchased + 1);
             UpdateACShopItemUI_Price(item.Id, nextPrice);
             UpdateACShopItemUI_Quantity(item.Id, purchased + 1);
             UpdateACShopItemUI_CPS(item.Id, item.autoClicksPerSecond * (purchased + 1));

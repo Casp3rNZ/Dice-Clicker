@@ -179,27 +179,56 @@ namespace MyGame
         /// </summary>
         public static string FormatBigInteger(BigInteger value)
         {
-            // For values that fit in a long, use built-in formatting
-            if (value >= long.MinValue && value <= long.MaxValue)
-                return ((long)value).ToString("N0");
-
-            // For truly huge values, insert commas manually
-            string raw = value.ToString();
-            bool negative = raw[0] == '-';
-            if (negative) raw = raw.Substring(1);
-
-            int insertCount = (raw.Length - 1) / 3;
-            char[] result = new char[raw.Length + insertCount];
-            int ri = result.Length - 1;
-            for (int i = raw.Length - 1, digits = 0; i >= 0; i--, digits++)
+            if (value == BigInteger.Zero)
+                return "0";
+            Debug.Log($"[FormatBigInt] input: {value}");
+        
+            string[] suffixes =
             {
-                if (digits > 0 && digits % 3 == 0)
-                    result[ri--] = ',';
-                result[ri--] = raw[i];
-            }
-
-            string formatted = new string(result, ri + 1, result.Length - ri - 1);
-            return negative ? "-" + formatted : formatted;
+                "",    // 10^0   (units)
+                "K",   // 10^3   Thousand
+                "M",   // 10^6   Million
+                "B",   // 10^9   Billion
+                "T",   // 10^12  Trillion
+                "q",   // 10^15  Quadrillion
+                "Q",   // 10^18  Quintillion
+                "s",   // 10^21  Sextillion
+                "S",   // 10^24  Septillion
+                "O",   // 10^27  Octillion
+                "N",   // 10^30  Nonillion
+                "d",   // 10^33  Decillion
+                "U",   // 10^36  Undecillion
+                "D",   // 10^39  Duodecillion
+                "t",   // 10^42  Tredecillion
+                "f",   // 10^45  Quattuordecillion
+                "T",   // 10^48  Quindecillion
+                "X",   // 10^51  Sexdecillion
+                "x",   // 10^54  Septendecillion
+                "o",   // 10^57  Octodecillion
+                "n",   // 10^60  Novemdecillion
+                "V",   // 10^63  Vigintillion
+            };
+        
+            // Precompute one divisor per tier so the loop does simple comparisons only.
+            BigInteger[] thresholds = new BigInteger[suffixes.Length];
+            thresholds[0] = BigInteger.One;
+            for (int i = 1; i < thresholds.Length; i++)
+                thresholds[i] = thresholds[i - 1] * 1000;
+        
+            // Below 100K: plain number with comma separators.
+            if (value < new BigInteger(100_000))
+                return ((long)value).ToString("N0");
+        
+            // Find the highest tier whose threshold doesn't exceed the value.
+            int tier = suffixes.Length - 1;
+            while (tier > 0 && value < thresholds[tier])
+                tier--;
+        
+            BigInteger divisor = thresholds[tier];
+            BigInteger whole = value / divisor;
+            BigInteger oneDecimal = value % divisor * 10 / divisor;
+        
+            return $"{whole}.{oneDecimal}{suffixes[tier]}";
         }
     }
 }

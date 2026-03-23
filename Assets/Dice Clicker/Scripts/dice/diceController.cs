@@ -18,7 +18,7 @@ namespace MyGame
         [SerializeField] private float spacing = 0.2f;
 
         [Header("Roll / Settle Detection")]
-        [SerializeField] private float maxSettleWait = 8f;           // seconds (failsafe)
+        [SerializeField] private float maxSettleWait = 8f;
 
         [Header("Collision Audio")]
         [SerializeField] private float collisionCooldown = 0.1f;
@@ -237,20 +237,20 @@ namespace MyGame
             }
             if (rb == null)
             {
-                UnityEngine.Debug.LogWarning("DiceController: No Rigidbody found.");
+                Debug.LogWarning("DiceController: No Rigidbody found.");
                 return;
             }
             isRolling = true;
             AudioManager.Instance.PlaySFX_DiceRoll();
 
-            Vector3 wishDirection = WaypointManager.Instance.GetDiceWishDirection(this.transform.position);
+            Vector3 wishDirection = WaypointManager.Instance.GetDiceWishDirection(transform.position);
 
             // Project this die's offset from the group center onto the wish direction
             Vector3 averagePosition = DiceManager.Instance.GetAverageDicePosition();
-            Vector3 offsetFromGroup = this.transform.position - averagePosition;
+            Vector3 offsetFromGroup = transform.position - averagePosition;
             float projectedOffset = Vector3.Dot(offsetFromGroup, wishDirection);
 
-            const float baseForce = 25f; // Average force all dice recieve
+            const float baseForce = 5f; // Average force all dice recieve
             const float spreadRange = 3f; // How many units ahead/behind the group center counts as an extreme outlier in need of correction
             const float scaleStrength = 0.6f; // How aggressively to scale forces for outliers (0 = flat, 1 = full inversion)
 
@@ -260,17 +260,21 @@ namespace MyGame
             Vector3 force = wishDirection * multiplier;
 
             force += new Vector3(
-                Random.Range(-2f, 2f),
-                Random.Range(30f, 65f),
-                Random.Range(-2f, 2f));
+                Random.Range(-1f, 1f),
+                Random.Range(7f, 15f),
+                Random.Range(-1f, 1f));
 
             Vector3 randomTorque = new Vector3(
                 Random.Range(-10f, 10f),
                 Random.Range(-10f, 10f),
                 Random.Range(-10f, 10f));
 
-            rb.AddForce(force, ForceMode.Impulse);
-            rb.AddTorque(randomTorque, ForceMode.Impulse);
+            //rb.AddForce(force, ForceMode.Impulse);
+            //rb.AddTorque(randomTorque, ForceMode.Impulse);
+            // add forces directly to mitigate rigidbody overhead
+            // forces updated accordingly, could use tweaking.
+            rb.linearVelocity = force;
+            rb.angularVelocity = randomTorque;
 
             StopAllCoroutines();
             StartCoroutine(WaitForSettleThenReport());

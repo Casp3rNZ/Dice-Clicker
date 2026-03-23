@@ -1,6 +1,6 @@
 <ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
     <Style src="project://database/Assets/ShopItem.uss?fileID=7433441132597879392&amp;guid=fb59ba105f49f744eb64e21ca64dde26&amp;type=3#ShopItem"/>
-    <ui:VisualElement name="DiceShopItem" enabled="true" style="flex-grow: 1; background-color: rgb(237, 230, 210); height: 100%; width: 97%; align-items: center; justify-content: center; flex-direction: row; margin-left: 0; margin-right: 0; align-self: center; align-content: auto; flex-basis: auto; margin-top: 0; margin-bottom: 0; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0; border-left-color: rgba(0, 0, 0, 0); border-right-color: rgba(0, 0, 0, 0); border-top-color: rgba(0, 0, 0, 0); border-bottom-color: rgba(0, 0, 0, 0);">
+    <ui:VisualElement name="DiceShopItem" enabled="true" style="flex-grow: 1; background-color: rgb(237, 230, 210); height: 100%; width: 98%; align-items: center; justify-content: center; flex-direction: row; margin-left: 0; margin-right: 0; align-self: center; align-content: auto; flex-basis: auto; margin-top: 0; margin-bottom: 0; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0; border-left-color: rgba(0, 0, 0, 0); border-right-color: rgba(0, 0, 0, 0); border-top-color: rgba(0, 0, 0, 0); border-bottom-color: rgba(0, 0, 0, 0);">
         <ui:Image name="DicePreview" class="dice-preview-icon"/>
         <ui:VisualElement name="MetaContainer" style="flex-grow: 1; height: 90%; width: auto;">
             <ui:Label text="Item Name" name="ItemName" class="kabel-text-label"/>
@@ -11,6 +11,6 @@
             </ui:VisualElement>
         </ui:VisualElement>
         <ui:Label text="x" name="QtyValue" class="kabel-text-label" style="font-size: 32px; -unity-font-style: bold; -unity-font-definition: url(&quot;project://database/Assets/Dice%20Clicker/Fonts/kabel.ttf?fileID=12800000&amp;guid=3df2703482f746344b0d19b67c33a247&amp;type=3#kabel&quot;); -unity-text-align: upper-left; transform-origin: center; position: absolute; top: 1%; right: 1%;"/>
-        <ui:Button text="BUY" name="PurchaseButton" class="shop-purchase-button"/>
+        <ui:Button text="BUY" name="PurchaseButton" class="shop-purchase-button" style="bottom: 4%; right: 2%;"/>
     </ui:VisualElement>
 </ui:UXML>
