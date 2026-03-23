@@ -1,5 +1,5 @@
-using UnityEngine;
 using System.Collections;
+using UnityEngine;
 
 namespace MyGame
 {
@@ -25,6 +25,8 @@ namespace MyGame
         [SerializeField] private float minImpulse = 0.5f;
         private float _lastCollisionTime = -1f;
 
+        private float _minImpulseSq = 0;
+
         private bool isRolling = false;
         public bool IsRolling => isRolling;
         public bool isInitialized = false;
@@ -40,6 +42,7 @@ namespace MyGame
                 SetupDice();
                 CreatePips();
                 SetupPips();
+                _minImpulseSq = minImpulse * minImpulse;
                 isInitialized = true;
             }
         }
@@ -330,27 +333,28 @@ namespace MyGame
                 DiceManager.Instance.RePositionDie(dieID); 
                 return;
             }
-            if (!collision.gameObject.CompareTag("ground") && !collision.gameObject.CompareTag("dice"))
+
+            GameObject go = collision.gameObject;
+            
+            bool isGround = go.CompareTag("ground");
+            if (!isGround && !go.CompareTag("dice"))
                 return;
 
-
             // Skip weak impacts and enforce cooldown to avoid SFX spam
-            if (collision.relativeVelocity.sqrMagnitude < minImpulse * minImpulse) return;
+            Vector3 relativeVel = collision.relativeVelocity;
+            if (relativeVel.sqrMagnitude < _minImpulseSq) return;
             if (Time.time - _lastCollisionTime < collisionCooldown) return;
             _lastCollisionTime = Time.time;
 
             // Scale volume by impact strength (clamped 0..1)
-            float impactSpeed = collision.relativeVelocity.magnitude;
+            float impactSpeed = relativeVel.magnitude;
             float volume = Mathf.Clamp01(impactSpeed / 8f);
             float pitch = Mathf.Clamp(impactSpeed / 10f, 0.8f, 1.2f);
 
             if (!collision.gameObject.CompareTag("ground"))
-            {
                 AudioManager.Instance.PlaySFX_DiceToSurfaceCollision(volume, 0.2f, pitch);
-            } else {
+            else
                 AudioManager.Instance.PlaySFX_DiceToDiceCollission(volume, 0.2f, pitch);
-            }
         }
-
     }
 }
