@@ -44,7 +44,6 @@ namespace MyGame
         private readonly string ElementID_WorldShopButton = "WorldShopButton";
         private readonly string ElementID_SettingsWindow = "SettingsWindow";
         private readonly string ElementID_SettingsButton = "SettingsButton";
-        private readonly string ElementID_RewardedAdPopupIcon = "RAdPopupIcon";
         private readonly string ElementID_DicePreviewThumbnail = "DicePreview";
         private readonly string ElementID_RewardedAdPrompt = "RAdPopupIcon";
         private readonly string ElementID_RewardedAdConfirmationWindow = "RAdConfirmationWindow";
@@ -718,10 +717,10 @@ namespace MyGame
         public void ShowRewardedAdPrompt()
         {
             var root = GetComponent<UIDocument>().rootVisualElement;
-            Button promptButton = root.Q<Button>(ElementID_RewardedAdPrompt);
+            VisualElement promptButton = root.Q<VisualElement>(ElementID_RewardedAdPrompt);
             if (promptButton != null)
             {
-                promptButton.clicked += OnRewardedAdPromptClicked;
+                promptButton.RegisterCallback<ClickEvent>(OnRewardedAdPromptClicked);
                 promptButton.style.display = DisplayStyle.Flex;
             }
             else
@@ -730,12 +729,12 @@ namespace MyGame
             }
         }
 
-        public void OnRewardedAdPromptClicked()
+        public void OnRewardedAdPromptClicked(ClickEvent evt)
         {
             // Implementation for handling rewarded ad prompt click
             var root = GetComponent<UIDocument>().rootVisualElement;
             VisualElement confirmationWindow = root.Q(ElementID_RewardedAdConfirmationWindow);
-            Button promptButton = root.Q<Button>(ElementID_RewardedAdPrompt);
+            VisualElement promptButton = root.Q<VisualElement>(ElementID_RewardedAdPrompt);
             if (confirmationWindow != null)
             {
                 confirmationWindow.style.display = DisplayStyle.Flex;
@@ -777,10 +776,10 @@ namespace MyGame
         public void HideRewardedAdPrompt()
         {
             var root = GetComponent<UIDocument>().rootVisualElement;
-            Button promptButton = root.Q<Button>(ElementID_RewardedAdPrompt);
+            VisualElement promptButton = root.Q<VisualElement>(ElementID_RewardedAdPrompt);
             if (promptButton != null)
             {
-                promptButton.clicked -= OnRewardedAdPromptClicked;
+                promptButton.UnregisterCallback<ClickEvent>(OnRewardedAdPromptClicked);
                 promptButton.style.display = DisplayStyle.None;
             }
             else

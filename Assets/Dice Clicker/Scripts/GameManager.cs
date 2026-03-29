@@ -181,7 +181,6 @@ namespace MyGame
         {
             if (value == BigInteger.Zero)
                 return "0";
-            Debug.Log($"[FormatBigInt] input: {value}");
         
             string[] suffixes =
             {
