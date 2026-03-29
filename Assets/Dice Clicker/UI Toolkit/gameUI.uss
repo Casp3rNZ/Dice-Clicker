@@ -19,3 +19,11 @@
     color: rgb(59, 51, 72);
     text-shadow: 5px 5px 0 rgba(0, 0, 0, 0.51);
 }
+
+.settings-label {
+    -unity-font-definition: url("project://database/Assets/Dice%20Clicker/Fonts/kabel.ttf?fileID=12800000&guid=3df2703482f746344b0d19b67c33a247&type=3#kabel");
+    font-size: 64px;
+    color: rgb(59, 51, 72);
+    text-shadow: 2.1px 3px 0 rgba(0, 0, 0, 0.47);
+    -unity-text-outline-color: rgb(0, 0, 0);
+}

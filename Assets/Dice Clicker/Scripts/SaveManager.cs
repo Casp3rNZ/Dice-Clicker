@@ -308,6 +308,7 @@ namespace MyGame
         public List<itemData> unlockedItemIds;
         public List<autoClickData> autoClickUpgrades;
         public string CS;
+        public settingsData settings;
     }
 
     [System.Serializable]
@@ -336,5 +337,13 @@ namespace MyGame
         /// Lifetime total purchases for this dice tier's auto-click upgrade.
         /// </summary>
         public int totalPurchased;
+    }
+
+    [System.Serializable]
+    public class settingsData
+    {
+        public bool sfxEnabled;
+        public bool musicEnabled;
+        public int videoQualityID;
     }
 }

@@ -12,16 +12,6 @@ namespace MyGame
     {
         public static AdManager Instance { get; private set; }
 
-        [Header("LevelPlay Rewarded Ad Prefabs")]
-        [SerializeField] private UIRewAdIcon rewardedAdPrompt;
-        [SerializeField] private UIRewAdConfirmWindow confirmationWindowController;
-        [SerializeField] private Transform uiParent;
-
-        [Header("Managers")]
-        [SerializeField] private GameManager gameManager;
-
-        // UI elements
-
         private RewardType _pendingRewardType = 0;
 
         // LevelPlay rewarded ad instance
@@ -85,15 +75,14 @@ namespace MyGame
             string encryptedCPM = adInfo.EncryptedCPM;
             LevelPlayAdSize adSize = adInfo.AdSize;
             // Ad loaded, display popup
-            rewardedAdPrompt.ShowIcon();
+            GameUIManager.Instance.ShowRewardedAdPrompt();
         }
 
         public void ShowAd()
         {
             if (_RewardedAd_30MinInc.IsAdReady())
             {
-                rewardedAdPrompt.HideIcon();
-                confirmationWindowController.Close();
+                GameUIManager.Instance.HideRewardedAdPrompt();
                 _RewardedAd_30MinInc.ShowAd();
             }
             else
@@ -105,11 +94,6 @@ namespace MyGame
         private void AdsInitFailed(LevelPlayInitError error)
         {
             Debug.LogError($"LevelPlay SDK initialization failed: {error}");
-        }
-
-        private void OnPromptClicked()
-        {
-            confirmationWindowController.Open();
         }
 
         private void RewardedAdCompleted(LevelPlayAdInfo adInfo, LevelPlayReward reward)
@@ -134,19 +118,19 @@ namespace MyGame
 
         private void GrantTimedIncome(int minutes = 30)
         {
-            if ( gameManager == null)
+            if ( GameManager.Instance == null)
             {
                 Debug.LogError("AdManager: Missing manager references for reward.");
                 return;
             }
             BigInteger totalIncome = CalculateAutoClickerIncome(minutes);
-            gameManager.AddToScore(totalIncome);
+            GameManager.Instance.AddToScore(totalIncome);
             Debug.Log($"Granted {totalIncome} autoclicker income for {minutes} minutes.");
         }
 
         private BigInteger CalculateAutoClickerIncome(double minutes)
         {
-            BigInteger avgIncome_60Sec = gameManager.GetAverageIncomePerSecondLast60Seconds();
+            BigInteger avgIncome_60Sec = GameManager.Instance.GetAverageIncomePerSecondLast60Seconds();
             BigInteger totalIncome = avgIncome_60Sec * 60 * (BigInteger)minutes;
             return totalIncome;
         }

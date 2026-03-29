@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
-using Unity.Android.Gradle.Manifest;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -13,15 +12,21 @@ namespace MyGame
     [RequireComponent(typeof(UIDocument))]
     public class GameUIManager : MonoBehaviour
     {
-
+        // Singleton instance
         public static GameUIManager Instance { get; private set; }
+
+        // UI refs
         [SerializeField] private VisualTreeAsset diceShopItemTemplate;
         [SerializeField] private VisualTreeAsset autoClickShopItemTemplate;
         [SerializeField] private ShopItem[] shopItems;
+
+        // Shop data
         public ShopItem[] ShopItems;
         private ShopItem[] autoClickShopItems;
         private Dictionary<int, VisualElement> _autoClickShopItemUIMap = new Dictionary<int, VisualElement>();
         private readonly Dictionary<int, VisualElement> _diceShopItemUIMap = new Dictionary<int, VisualElement>();
+
+        // Unity UI-Toolkit element IDs
         private readonly string ElementID_PriceValue = "PriceValue";
         private readonly string ElementID_ItemName = "ItemName";
         private readonly string ElementID_QuantityValue = "QtyValue";
@@ -30,27 +35,36 @@ namespace MyGame
         private readonly string ElementID_DiceShopWindow = "DiceShopWindow";
         private readonly string ElementID_DiceShopListView = "DiceShopListView";
         private readonly string ElementID_DiceShopButton = "DiceShopButton";
-
         private readonly string ElementID_AutoClickShopWindow = "AutoClickShopWindow";
         private readonly string ElementID_AutoClickShopListView = "AutoClickShopListView";
         private readonly string ElementID_AutoClickShopButton = "AutoClickShopButton";
         private readonly string ElementID_CPSValue = "CPSValue";
         private readonly string ElementID_RollButton = "RollButton";
-        
-
         private readonly string ElementID_WorldShopWindow = "WorldShopWindow";
         private readonly string ElementID_WorldShopButton = "WorldShopButton";
         private readonly string ElementID_SettingsWindow = "SettingsWindow";
         private readonly string ElementID_SettingsButton = "SettingsButton";
-
         private readonly string ElementID_RewardedAdPopupIcon = "RAdPopupIcon";
-
         private readonly string ElementID_DicePreviewThumbnail = "DicePreview";
+        private readonly string ElementID_RewardedAdPrompt = "RAdPopupIcon";
+        private readonly string ElementID_RewardedAdConfirmationWindow = "RAdConfirmationWindow";
+        private readonly string ElementID_RewardedAdAcceptButton = "Accept";
+        private readonly string ElementID_RewardedAdCancelButton = "Decline";
 
-        public static string CurrentlyOpenShop = null;
+        // Shop UI vars
+        public string CurrentlyOpenShop = null;
+        private readonly Color Color_ShopButtonActive = new Color32(0xE9, 0xCA, 0x53, 0xFF);
+        private readonly Color Color_ShopButtonInactive = new Color32(0xBC, 0xBC, 0xBC, 0x00);
+        private Dictionary<string, string> _windowToButtonMap;
+
+        // Score UI vars
         private Label ScoreCounterText;
         private BigInteger displayedScore = BigInteger.Zero;
 
+        // Settings UI vars
+        private bool settings_SFXEnabled = true;
+        private bool settings_musicEnabled = true;
+        private int settings_VideoQualityLevel = 2;
 
         void Start()
         {
@@ -439,12 +453,23 @@ namespace MyGame
         {
             var root = GetComponent<UIDocument>().rootVisualElement;
 
-            // Close currently open shop if it's not the one being toggled
+            // Lazily init the window → button lookup
+            _windowToButtonMap ??= new Dictionary<string, string>
+            {
+                { ElementID_DiceShopWindow,      ElementID_DiceShopButton      },
+                { ElementID_AutoClickShopWindow, ElementID_AutoClickShopButton },
+                { ElementID_WorldShopWindow,     ElementID_WorldShopButton     },
+                { ElementID_SettingsWindow,      ElementID_SettingsButton      },
+            };
+ 
+            // Close + deactivate the currently open shop if it differs from the target
             if (CurrentlyOpenShop != null && CurrentlyOpenShop != windowID)
             {
                 var currentShopWindow = root.Q(CurrentlyOpenShop);
                 if (currentShopWindow != null)
                     currentShopWindow.style.bottom = new Length(-70, LengthUnit.Percent);
+
+                SetShopButtonHighlight(root, CurrentlyOpenShop, false);
                 CurrentlyOpenShop = null;
             }
 
@@ -453,12 +478,16 @@ namespace MyGame
             {
                 if (CurrentlyOpenShop == windowID)
                 {
+                    // Close it
                     shopWindow.style.bottom = new Length(-70, LengthUnit.Percent);
+                    SetShopButtonHighlight(root, windowID, false);
                     CurrentlyOpenShop = null;
                 }
                 else
                 {
+                    // Open it
                     shopWindow.style.bottom = new Length(10, LengthUnit.Percent);
+                    SetShopButtonHighlight(root, windowID, true);
                     CurrentlyOpenShop = windowID;
                 }
             }
@@ -466,7 +495,16 @@ namespace MyGame
             {
                 Debug.LogError($"GameUIManager: Could not find {windowID} in the UI document.", this);
             }
+        }
 
+        private void SetShopButtonHighlight(VisualElement root, string windowID, bool active)
+        {
+            if (_windowToButtonMap != null && _windowToButtonMap.TryGetValue(windowID, out string buttonID))
+            {
+                Button btn = root.Q<Button>(buttonID);
+                if (btn != null)
+                    btn.style.backgroundColor = active ? Color_ShopButtonActive : Color_ShopButtonInactive;
+            }
         }
 
         /// <summary>
@@ -676,7 +714,80 @@ namespace MyGame
             ShopItem item = Array.Find(shopItems, x => x.Id == diceTypeId);
             return item != null ? item.multiplier : 1;
         }
+        
+        public void ShowRewardedAdPrompt()
+        {
+            var root = GetComponent<UIDocument>().rootVisualElement;
+            Button promptButton = root.Q<Button>(ElementID_RewardedAdPrompt);
+            if (promptButton != null)
+            {
+                promptButton.clicked += OnRewardedAdPromptClicked;
+                promptButton.style.display = DisplayStyle.Flex;
+            }
+            else
+            {
+                Debug.LogError("GameUIManager: Could not find Rewarded Ad Prompt button in the UI document.", this);
+            }
+        }
 
+        public void OnRewardedAdPromptClicked()
+        {
+            // Implementation for handling rewarded ad prompt click
+            var root = GetComponent<UIDocument>().rootVisualElement;
+            VisualElement confirmationWindow = root.Q(ElementID_RewardedAdConfirmationWindow);
+            Button promptButton = root.Q<Button>(ElementID_RewardedAdPrompt);
+            if (confirmationWindow != null)
+            {
+                confirmationWindow.style.display = DisplayStyle.Flex;
+                Button acceptButton = confirmationWindow.Q<Button>(ElementID_RewardedAdAcceptButton);
+                Button cancelButton = confirmationWindow.Q<Button>(ElementID_RewardedAdCancelButton);
+                if (acceptButton != null)
+                {
+                    acceptButton.clicked += () =>
+                    {
+                        AdManager.Instance.ShowAd();
+                        confirmationWindow.style.display = DisplayStyle.None;
+                        promptButton.style.display = DisplayStyle.None;
+                        HideRewardedAdPrompt();
+                    };
+                }
+                else
+                {
+                    Debug.LogError("GameUIManager: Could not find Accept button in the Rewarded Ad Confirmation Window.", this);
+                }
+                if (cancelButton != null)
+                {
+                    cancelButton.clicked += () =>
+                    {
+                        confirmationWindow.style.display = DisplayStyle.None;
+                    };
+                }
+                else
+                {
+                    Debug.LogError("GameUIManager: Could not find Decline button in the Rewarded Ad Confirmation Window.", this);
+                }
+            }
+            else
+            {
+                Debug.LogError("GameUIManager: Could not find Rewarded Ad Confirmation Window in the UI document.", this);
+            }
+
+        }
+
+        public void HideRewardedAdPrompt()
+        {
+            var root = GetComponent<UIDocument>().rootVisualElement;
+            Button promptButton = root.Q<Button>(ElementID_RewardedAdPrompt);
+            if (promptButton != null)
+            {
+                promptButton.clicked -= OnRewardedAdPromptClicked;
+                promptButton.style.display = DisplayStyle.None;
+            }
+            else
+            {
+                Debug.LogError("GameUIManager: Could not find Rewarded Ad Prompt button in the UI document.", this);
+            }
+        }
 
     }
 }
