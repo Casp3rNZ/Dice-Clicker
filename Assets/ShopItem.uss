@@ -48,6 +48,9 @@
     right: 1%;
     bottom: 1%;
     top: auto;
+    transition-property: background-color;
+    transition-duration: 0.15s;
+    transition-timing-function: ease-in-out;
     margin-top: 0;
     margin-bottom: 0;
     margin-left: 0;

@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
@@ -19,6 +20,10 @@ namespace MyGame
         [SerializeField] private VisualTreeAsset diceShopItemTemplate;
         [SerializeField] private VisualTreeAsset autoClickShopItemTemplate;
         [SerializeField] private ShopItem[] shopItems;
+
+        // Animation settings for button clicks
+        [SerializeField] private float buttonClickFadeDuration = 0.15f;
+        private Color buttonClickFadeColor = new Color(111f/255f, 168f/255f, 56f/255f, 1f);  // #6FA838 - slightly darker green 
 
         // Shop data
         public ShopItem[] ShopItems;
@@ -226,7 +231,11 @@ namespace MyGame
                 }
                 else
                 {
-                    purchaseButton.clicked += () => PurchaseDiceShopItem(shopItem);
+                    purchaseButton.clicked += () =>
+                    {
+                        StartCoroutine(AnimateButtonClickFade(purchaseButton));
+                        PurchaseDiceShopItem(shopItem);
+                    };
                 }
             };
             diceShopListView.itemsSource = ShopItems;
@@ -319,7 +328,11 @@ namespace MyGame
                 Button purchaseButton = element.Q<Button>(ElementID_PurchaseButton);
                 if (purchaseButton != null)
                 {
-                   purchaseButton.clicked += () => PurchaseAutoClickShopItem(shopItem);
+                   purchaseButton.clicked += () =>
+                   {
+                       StartCoroutine(AnimateButtonClickFade(purchaseButton));
+                       PurchaseAutoClickShopItem(shopItem);
+                   };
                 }
                 else
                 {
@@ -381,6 +394,23 @@ namespace MyGame
         {
             Debug.Log("Roll button clicked.");
             DiceManager.Instance.RollNextDice();
+        }
+
+        /// <summary>
+        /// Animates a UI button with a color fade effect on click using USS transitions.
+        /// </summary>
+        private IEnumerator AnimateButtonClickFade(Button button)
+        {
+            if (button == null) yield break;
+
+            // Set to darker green - USS will smoothly transition
+            button.style.backgroundColor = buttonClickFadeColor;
+            
+            // Wait for fade + hold at darker color
+            yield return new WaitForSeconds(0.3f);
+            
+            // Return to original - USS will smoothly transition back
+            button.style.backgroundColor = StyleKeyword.Null;
         }
 
         private void Update()

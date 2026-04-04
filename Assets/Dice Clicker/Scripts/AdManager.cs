@@ -55,7 +55,7 @@ namespace MyGame
             // // Optional 
             // RewardedAd.OnAdClicked += RewardedOnAdClickedEvent;
             // RewardedAd.OnAdInfoChanged += RewardedOnAdInfoChangedEvent;
-            StartCoroutine(LoadAdAfterDelay(6f));
+            StartCoroutine(LoadAdAfterDelay(60f));
             Debug.Log("LevelPlay SDK initialized successfully.");
         }
 
