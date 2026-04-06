@@ -911,7 +911,9 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 5eae0100cb40f2e4a998bf1d36cc0893, type: 2}
   - {fileID: 11400000, guid: 43cc843f2636a014e937af3f0d9adcba, type: 2}
   - {fileID: 11400000, guid: 8b8419d44d73c1f4ea973705c0bca7f1, type: 2}
+  buttonClickFadeDuration: 0.3
   ShopItems: []
+  CurrentlyOpenShop: 
 --- !u!114 &801061265
 MonoBehaviour:
   m_ObjectHideFlags: 0

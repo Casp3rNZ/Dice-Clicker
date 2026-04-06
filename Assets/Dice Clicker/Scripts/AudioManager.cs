@@ -19,6 +19,8 @@ public class AudioManager : MonoBehaviour
     [SerializeField] private float masterVolume = 1f;
 
     private float currentVolume = 1f;
+    private bool musicEnabled = false;
+    private bool sfxEnabled = true;
 
     /// <summary>
     /// Basic procedural audio generator for simple waveforms and noise, used to create SFX clips at runtime without needing external audio files.
@@ -307,13 +309,16 @@ public class AudioManager : MonoBehaviour
     {
         if (clip == null)
         {
-            UnityEngine.Debug.LogWarning("AudioManager: Attempted to play a null AudioClip.", this);
+            Debug.LogWarning("AudioManager: Attempted to play a null AudioClip.", this);
             return;
         }
 
+        if (!sfxEnabled)
+            return;
+
         if(_sfxPool.Count == 0)
         {
-            UnityEngine.Debug.Log("AudioManager: SFX pool exhausted, creating additional source.");
+            Debug.Log("AudioManager: SFX pool exhausted, creating additional source.");
             _sfxPool.Enqueue(CreateNewSource());
         }
 
@@ -331,6 +336,16 @@ public class AudioManager : MonoBehaviour
         yield return new WaitForSeconds(duration + 0.05f);
         if (src != null)
             _sfxPool.Enqueue(src);
+    }
+
+    public void SetSFXEnabled(bool enabled)
+    {
+        sfxEnabled = enabled;
+    }
+
+    public void SetMusicEnabled(bool enabled)
+    {
+        musicEnabled = enabled;
     }
 
     #endregion

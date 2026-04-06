@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -22,7 +23,7 @@ namespace MyGame
         [SerializeField] private ShopItem[] shopItems;
 
         // Animation settings for button clicks
-        [SerializeField] private float buttonClickFadeDuration = 0.15f;
+        [SerializeField] private float buttonClickFadeDuration = 0.05f;
         private Color buttonClickFadeColor = new Color(111f/255f, 168f/255f, 56f/255f, 1f);  // #6FA838 - slightly darker green 
 
         // Shop data
@@ -54,6 +55,9 @@ namespace MyGame
         private readonly string ElementID_RewardedAdConfirmationWindow = "RAdConfirmationWindow";
         private readonly string ElementID_RewardedAdAcceptButton = "Accept";
         private readonly string ElementID_RewardedAdCancelButton = "Decline";
+        private readonly string ElementID_VideoSettingDropDown = "VideoSettingDropDown";
+        private readonly string ElementID_SFXToggle = "SFXToggle";
+        private readonly string ElementID_MusicToggle = "MusicToggle";
 
         // Shop UI vars
         public string CurrentlyOpenShop = null;
@@ -81,6 +85,8 @@ namespace MyGame
                 Destroy(gameObject);
             }
 
+            var root = GetComponent<UIDocument>().rootVisualElement;
+
             // Check required refs
 
             // Dice Shop
@@ -88,13 +94,13 @@ namespace MyGame
             {
                 Debug.LogError("GameUIManager: diceShopItemTemplate is not assigned.", this);
             }
-            ListView diceShopListView = GetComponent<UIDocument>().rootVisualElement.Q<ListView>(ElementID_DiceShopListView);
+            ListView diceShopListView = root.Q<ListView>(ElementID_DiceShopListView);
             if (diceShopListView == null)
             {
                 Debug.LogError("GameUIManager: Could not find DiceShopListView in the UI document.", this);
                 return;
             }
-            Button diceShopButton = GetComponent<UIDocument>().rootVisualElement.Q<Button>(ElementID_DiceShopButton);
+            Button diceShopButton = root.Q<Button>(ElementID_DiceShopButton);
             if (diceShopButton == null)
             {
                 Debug.LogError("GameUIManager: Could not find DiceShopButton in the UI document.", this);
@@ -105,39 +111,39 @@ namespace MyGame
             {
                 Debug.LogError("GameUIManager: autoClickShopItemTemplate is not assigned.", this);
             }
-            ListView autoClickShopListView = GetComponent<UIDocument>().rootVisualElement.Q<ListView>(ElementID_AutoClickShopListView);
+            ListView autoClickShopListView = root.Q<ListView>(ElementID_AutoClickShopListView);
             if (autoClickShopListView == null)
             {
                 Debug.LogError("GameUIManager: Could not find AutoClickShopListView in the UI document.", this);
                 return;
             }
-            Button autoClickShopButton = GetComponent<UIDocument>().rootVisualElement.Q<Button>(ElementID_AutoClickShopButton);
+            Button autoClickShopButton = root.Q<Button>(ElementID_AutoClickShopButton);
             if (autoClickShopButton == null)
             {
                 Debug.LogError("GameUIManager: Could not find AutoClickShopButton in the UI document.", this);
             }
 
             // World Shop
-            Button worldShopButton = GetComponent<UIDocument>().rootVisualElement.Q<Button>(ElementID_WorldShopButton);
+            Button worldShopButton = root.Q<Button>(ElementID_WorldShopButton);
             if (worldShopButton == null)
             {
                 Debug.LogError("GameUIManager: Could not find WorldShopButton in the UI document.", this);
             }
 
             // Settings
-            Button settingsButton = GetComponent<UIDocument>().rootVisualElement.Q<Button>(ElementID_SettingsButton);
+            Button settingsButton = root.Q<Button>(ElementID_SettingsButton);
             if (settingsButton == null)  
             {
                 Debug.LogError("GameUIManager: Could not find SettingsButton in the UI document.", this);
             }
             
             // Global
-            Button rollButton = GetComponent<UIDocument>().rootVisualElement.Q<Button>(ElementID_RollButton);
+            Button rollButton = root.Q<Button>(ElementID_RollButton);
             if (rollButton == null)
             {
                 Debug.LogError("GameUIManager: Could not find RollButton in the UI document.", this);
             }
-            ScoreCounterText = GetComponent<UIDocument>().rootVisualElement.Q<Label>(ElementID_ScoreText);
+            ScoreCounterText = root.Q<Label>(ElementID_ScoreText);
             if (ScoreCounterText == null)
             {
                 Debug.LogError("GameUIManager: Could not find ScoreLabel in the UI document.", this);
@@ -366,6 +372,97 @@ namespace MyGame
                 autoClickScrollView.style.width = Length.Percent(100);
                 autoClickScrollView.verticalScrollerVisibility = ScrollerVisibility.Hidden;
             }
+
+
+
+            // Init Settings UI
+            settingsData currentsettings = SaveManager.Instance.GetSettings();
+            if (currentsettings != null)
+            {
+                settings_SFXEnabled = currentsettings.sfxEnabled;
+                settings_musicEnabled = currentsettings.musicEnabled;
+                settings_VideoQualityLevel = currentsettings.videoQualityID;
+
+                AudioManager.Instance.SetSFXEnabled(settings_SFXEnabled);
+                AudioManager.Instance.SetMusicEnabled(settings_musicEnabled);
+                QualitySettings.SetQualityLevel(settings_VideoQualityLevel, true);
+            }
+            else
+            {
+                Debug.LogWarning("GameUIManager: No settings data found in save file. Using default settings.", this);
+            }
+
+
+            DropdownField videoDropdown = root.Q<DropdownField>(ElementID_VideoSettingDropDown);
+            if (videoDropdown != null)
+            {
+                videoDropdown.choices = new List<string> { "Low", "Medium", "High" };
+                videoDropdown.value = settings_VideoQualityLevel switch
+                {
+                    0 => "Low",
+                    1 => "Medium",
+                    2 => "High",
+                    _ => "High"
+                };
+                videoDropdown.RegisterValueChangedCallback(evt =>
+                {
+                    Debug.Log("Video quality dropdown changed to: " + evt.newValue);
+                    switch (evt.newValue)
+                    {
+                        case "Low":
+                            settings_VideoQualityLevel = 0;
+                            QualitySettings.SetQualityLevel(settings_VideoQualityLevel, true);
+                            break;
+                        case "Medium":
+                            settings_VideoQualityLevel = 1;
+                            QualitySettings.SetQualityLevel(settings_VideoQualityLevel, true);
+                            break;
+                        case "High":
+                            settings_VideoQualityLevel = 2;
+                            QualitySettings.SetQualityLevel(settings_VideoQualityLevel, true);
+                            break;
+                    }
+                    SaveManager.Instance.UpdateVideoQuality(settings_VideoQualityLevel);
+                });
+            }
+            else
+            {
+                Debug.LogError("GameUIManager: Could not find VideoSettingDropDown in the UI document.", this);
+            }
+
+            Toggle SFXToggle = root.Q<Toggle>(ElementID_SFXToggle);
+            if (SFXToggle != null)
+            {
+                SFXToggle.value = settings_SFXEnabled;
+                SFXToggle.RegisterValueChangedCallback(evt =>
+                {
+                    settings_SFXEnabled = evt.newValue;
+                    AudioManager.Instance.SetSFXEnabled(settings_SFXEnabled);
+                    SaveManager.Instance.UpdateSFXEnabled(settings_SFXEnabled);
+                });
+            }
+            else
+            {
+                Debug.LogError("GameUIManager: Could not find SFXToggle in the UI document.", this);
+            }
+
+            Toggle MusicToggle = root.Q<Toggle>(ElementID_MusicToggle);
+            if (MusicToggle != null)
+            {
+                MusicToggle.value = settings_musicEnabled;
+                MusicToggle.RegisterValueChangedCallback(evt =>
+                {
+                    settings_musicEnabled = evt.newValue;
+                    AudioManager.Instance.SetMusicEnabled(settings_musicEnabled);
+                    SaveManager.Instance.UpdateMusicEnabled(settings_musicEnabled);
+                });
+            }
+            else
+            {
+                Debug.LogError("GameUIManager: Could not find MusicToggle in the UI document.", this);
+            }
+
+
         }
 
         public Material GetMaterialForDiceType(int diceType)
@@ -397,19 +494,21 @@ namespace MyGame
         }
 
         /// <summary>
-        /// Animates a UI button with a color fade effect on click using USS transitions.
+        /// Animates a UI button with a color fade and scale effect on click using USS transitions.
         /// </summary>
         private IEnumerator AnimateButtonClickFade(Button button)
         {
             if (button == null) yield break;
 
-            // Set to darker green - USS will smoothly transition
+            // Scale down and set to darker green
+            button.style.scale = new Scale(new UnityEngine.Vector2(0.95f, 0.95f));
             button.style.backgroundColor = buttonClickFadeColor;
             
             // Wait for fade + hold at darker color
-            yield return new WaitForSeconds(0.3f);
+            yield return new WaitForSeconds(buttonClickFadeDuration);
             
-            // Return to original - USS will smoothly transition back
+            // Return to original - USS will handle transition 
+            button.style.scale = new Scale(new UnityEngine.Vector2(1f, 1f));
             button.style.backgroundColor = StyleKeyword.Null;
         }
 

@@ -286,6 +286,66 @@ namespace MyGame
             }
             data.totalPurchased++;
         }
+
+        // ─────────────── Settings Data ───────────────
+        public settingsData GetSettings()
+        {
+            if (_currentSaveData == null) LoadGame();
+            if (_currentSaveData.settings == null)
+            {
+                _currentSaveData.settings = new settingsData
+                {
+                    sfxEnabled = true,
+                    musicEnabled = true,
+                    videoQualityID = 2
+                };
+            }
+            return _currentSaveData.settings;
+        }
+        public void UpdateSFXEnabled(bool enabled)
+        {
+            if (_currentSaveData == null) LoadGame();
+            if (_currentSaveData.settings == null)
+            {
+                _currentSaveData.settings = new settingsData
+                {
+                    sfxEnabled = true,
+                    musicEnabled = true,
+                    videoQualityID = 2
+                };
+            }
+            _currentSaveData.settings.sfxEnabled = enabled;
+        }
+
+        public void UpdateMusicEnabled(bool enabled)
+        {
+            if (_currentSaveData == null) LoadGame();
+            if (_currentSaveData.settings == null)
+            {
+                _currentSaveData.settings = new settingsData
+                {
+                    sfxEnabled = true,
+                    musicEnabled = true,
+                    videoQualityID = 2
+                };
+            }
+            _currentSaveData.settings.musicEnabled = enabled;
+        }
+
+        public void UpdateVideoQuality(int qualityID)
+        {
+            if (_currentSaveData == null) LoadGame();
+            if (_currentSaveData.settings == null)
+            {
+                _currentSaveData.settings = new settingsData
+                {
+                    sfxEnabled = true,
+                    musicEnabled = true,
+                    videoQualityID = 2
+                };
+            }
+            _currentSaveData.settings.videoQualityID = qualityID;
+        }
     }
 
     /// <summary>
