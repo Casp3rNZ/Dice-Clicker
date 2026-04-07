@@ -1569,6 +1569,7 @@ MonoBehaviour:
   initialSfxPoolSize: 6
   sampleRate: 44100
   masterVolume: 1
+  BGM_GardenWorld: {fileID: 8300000, guid: db63507dc97391d4dbcc22664920b723, type: 3}
 --- !u!4 &1922668398
 Transform:
   m_ObjectHideFlags: 0

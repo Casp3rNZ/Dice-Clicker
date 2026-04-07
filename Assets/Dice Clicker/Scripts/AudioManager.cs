@@ -1,5 +1,7 @@
 using UnityEngine;
 using System.Collections.Generic;
+using MyGame;
+using UnityEditor.Overlays;
 
 /// <summary>
 /// Singleton manager responsible for generating and playing sound effects (SFX) throughout the game.
@@ -17,6 +19,7 @@ public class AudioManager : MonoBehaviour
 
     [Range(0f, 1f)]
     [SerializeField] private float masterVolume = 1f;
+    [SerializeField] private AudioClip BGM_GardenWorld;
 
     private float currentVolume = 1f;
     private bool musicEnabled = false;
@@ -43,18 +46,36 @@ public class AudioManager : MonoBehaviour
     private Dictionary<string, AudioClip> _sfxClipCache = new Dictionary<string, AudioClip>();
 
     private Queue<AudioSource> _sfxPool = new Queue<AudioSource>();
+    private HashSet<AudioSource> _allSfxSources = new HashSet<AudioSource>();
+    private AudioSource _musicSource;
 
     void Awake()
     {
         if(Instance != null && Instance != this)
         {
-            UnityEngine.Debug.LogWarning("Multiple instances of AudioManager detected. Destroying duplicate.", this);
+            Debug.LogWarning("Multiple instances of AudioManager detected. Destroying duplicate.", this);
             Destroy(gameObject);
             return;
         }
         Instance = this;
 
-        InitializeSfxPools();
+        if(BGM_GardenWorld == null)
+        {
+            Debug.LogError("AudioManager: No background music clip assigned. Music will be disabled.", this);
+            musicEnabled = false;
+        }
+
+        settingsData saveData = SaveManager.Instance.GetAllCurrentData().settings;
+        if(saveData.musicEnabled)
+        {
+            _musicSource = CreateMusicSource();
+            musicEnabled = true;
+        }
+        if(saveData.sfxEnabled)
+        {
+            InitializeSfxPools();
+            sfxEnabled = true;
+        }
     }
 
     private void InitializeSfxPools()
@@ -71,17 +92,51 @@ public class AudioManager : MonoBehaviour
         src.playOnAwake = false;
         src.loop = false;
         src.spatialBlend = 0f; // 2D sound for now
+        _allSfxSources.Add(src);
         return src;
     }
 
-    public void SetMasterVolume(float volume)
+    private void DeleteSFXSources()
     {
-        masterVolume = Mathf.Clamp01(volume);
-        currentVolume = masterVolume;
-        // TODO: update save file with  volume setting
+        foreach (var src in _allSfxSources)
+        {
+            if (src != null)
+            {
+                src.Stop();
+                Destroy(src.gameObject);
+            }
+        }
+        _allSfxSources.Clear();
+        _sfxPool.Clear();
     }
 
-    public float GetVolume() => masterVolume;
+    private void DeleteMusicSource()
+    {
+        var musicSrc = transform.Find("MusicSource");
+        if (musicSrc != null)
+            Destroy(musicSrc.gameObject);
+    }
+
+    private AudioSource CreateMusicSource()
+    {
+        GameObject go = new GameObject("MusicSource");
+        go.transform.SetParent(transform);
+        var src = go.AddComponent<AudioSource>();
+        src.playOnAwake = true;
+        src.loop = true;
+        src.spatialBlend = 0f; // 2D sound
+        return src;
+    }
+
+    private void Play_BGM()
+    {
+        if (BGM_GardenWorld == null || _musicSource == null)
+            return;
+
+        _musicSource.clip = BGM_GardenWorld;
+        _musicSource.volume = currentVolume * 0.05f;
+        _musicSource.Play();
+    }
 
     #region SFX Playback Generators
 
@@ -334,19 +389,33 @@ public class AudioManager : MonoBehaviour
     private System.Collections.IEnumerator ReturnSourceAfterPlay(AudioSource src, float duration)
     {
         yield return new WaitForSeconds(duration + 0.05f);
-        if (src != null)
+        if (src != null && _allSfxSources.Contains(src))
             _sfxPool.Enqueue(src);
     }
 
+    #endregion
+
     public void SetSFXEnabled(bool enabled)
     {
+        if(!enabled) // stopping
+            DeleteSFXSources();
+        else // starting
+            InitializeSfxPools();
+
         sfxEnabled = enabled;
     }
 
     public void SetMusicEnabled(bool enabled)
     {
+        if(!enabled) // stopping
+            DeleteMusicSource();
+        else // starting
+        {
+            if(_musicSource == null)
+                _musicSource = CreateMusicSource();
+            Play_BGM();
+        }
+
         musicEnabled = enabled;
     }
-
-    #endregion
 }
