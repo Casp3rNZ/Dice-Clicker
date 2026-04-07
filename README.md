@@ -15,8 +15,6 @@ Each die roll produces:
 
 $$\text{points} = \text{roll} \times \text{typeMultiplier} \times 10^{(\text{level} - 1)}$$
 
-The displayed score animates toward the actual score with an interpolated counter and dynamic font scaling.
-
 ### Dice
 `DiceManager` spawns dice from save data on startup and handles round-robin rolling. 
 `DiceController` uses Unity physics (`Rigidbody`) for realistic rolls, detects when the die settles, reads the top face, and fires an `OnDiceSettled` event.
