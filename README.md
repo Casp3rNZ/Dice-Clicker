@@ -1,7 +1,7 @@
 # Dice Idler
 An idle/incremental clicker game built in **Unity 6** where players roll dice to earn points, purchase upgrades, and unlock new dice types with unique materials and multipliers.
 
-<img width="399" height="822" alt="image" src="https://github.com/user-attachments/assets/900f5a15-5813-4afe-9c0d-4bbceef6cad8" />
+<img width="402" height="820" alt="image" src="https://github.com/user-attachments/assets/0dc5c28b-a632-4033-8448-a565a84ff9d5" />
 <img width="399" height="821" alt="image" src="https://github.com/user-attachments/assets/51401178-01c2-4d53-9dbf-52fc0108515b" />
 
 
