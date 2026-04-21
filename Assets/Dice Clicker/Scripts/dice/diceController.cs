@@ -23,7 +23,9 @@ namespace MyGame
         [Header("Collision Audio")]
         [SerializeField] private float collisionCooldown = 0.1f;
         [SerializeField] private float minImpulse = 0.5f;
+        [SerializeField] private GameObject dirtParticleEffectPrefab;
         private float _lastCollisionTime = -1f;
+        private Terrain cachedTerrain = null;
 
         private float _minImpulseSq = 0;
 
@@ -338,6 +340,11 @@ namespace MyGame
                 return;
             }
 
+            if(cachedTerrain == null)
+            {
+                cachedTerrain = Terrain.activeTerrain;
+            }
+
             GameObject go = collision.gameObject;
             
             bool isGround = go.CompareTag("ground");
@@ -355,10 +362,83 @@ namespace MyGame
             float volume = Mathf.Clamp01(impactSpeed / 8f);
             float pitch = Mathf.Clamp(impactSpeed / 10f, 0.8f, 1.2f);
 
-            if (!collision.gameObject.CompareTag("ground"))
+            if (collision.gameObject.CompareTag("ground"))
+            {
                 AudioManager.Instance.PlaySFX_DiceToSurfaceCollision(volume, 0.2f, pitch);
+                if (cachedTerrain != null)
+                {
+                    ContactPoint contact = collision.GetContact(0);
+                    string surfaceType = GetTerrainLayerAtPoint(contact.point, cachedTerrain);
+                    Debug.Log("Surface type at contact point: " + surfaceType);
+                    
+                    if (surfaceType == "DirtLayer")
+                    {
+                        Debug.Log("Hit dirt, spawn particles");
+                        GameObject particleEffect = Instantiate(dirtParticleEffectPrefab, contact.point, Quaternion.LookRotation(contact.normal));
+                    }
+                }
+            }
             else
                 AudioManager.Instance.PlaySFX_DiceToDiceCollission(volume, 0.2f, pitch);
+        }
+
+        private void OnCollisionStay(Collision collision)
+        {
+            // Only check FallTrap/outerBarrier here as a secondary check
+            if(collision.gameObject.CompareTag("FallTrap") || collision.gameObject.CompareTag("outerBarrier"))
+            {
+                DiceManager.Instance.RePositionDie(dieID);
+            }
+        }
+
+        /// <summary>
+        /// Determines the dominant terrain layer at a given world position by sampling the splatmap.
+        /// </summary>
+        private string GetTerrainLayerAtPoint(Vector3 worldPos, Terrain terrain)
+        {
+            TerrainData terrainData = terrain.terrainData;
+            if (terrainData == null) return "Unknown";
+            
+            Vector3 terrainLocalPos = worldPos - terrain.GetPosition();
+            
+            // Normalize position to [0,1] range on terrain
+            float normX = terrainLocalPos.x / terrainData.size.x;
+            float normZ = terrainLocalPos.z / terrainData.size.z;
+            
+            // Clamp to terrain bounds
+            normX = Mathf.Clamp01(normX);
+            normZ = Mathf.Clamp01(normZ);
+            
+            // Get splatmap coordinates
+            int alphamapWidth = terrainData.alphamapWidth;
+            int alphamapHeight = terrainData.alphamapHeight;
+            int x = Mathf.Clamp(Mathf.RoundToInt(normX * (alphamapWidth - 1)), 0, alphamapWidth - 1);
+            int z = Mathf.Clamp(Mathf.RoundToInt(normZ * (alphamapHeight - 1)), 0, alphamapHeight - 1);
+            
+            // Get splatmap data
+            float[,,] splatmapData = terrainData.GetAlphamaps(x, z, 1, 1);
+            int layerCount = splatmapData.GetLength(2);
+            
+            // Find dominant layer
+            int dominantLayer = 0;
+            float maxValue = splatmapData[0, 0, 0];
+            
+            for (int i = 1; i < layerCount; i++)
+            {
+                if (splatmapData[0, 0, i] > maxValue)
+                {
+                    maxValue = splatmapData[0, 0, i];
+                    dominantLayer = i;
+                }
+            }
+            
+            // Map layer index to terrain layer name
+            if (dominantLayer < terrainData.terrainLayers.Length)
+            {
+                return terrainData.terrainLayers[dominantLayer].name;
+            }
+            
+            return "Unknown";
         }
     }
 }

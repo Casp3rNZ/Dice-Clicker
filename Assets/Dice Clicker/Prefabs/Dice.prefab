@@ -158,3 +158,5 @@ MonoBehaviour:
   maxSettleWait: 15
   collisionCooldown: 0.1
   minImpulse: 0.5
+  dirtParticleEffectPrefab: {fileID: 1841747362558051434, guid: 91ee9336f250f6b40b3d0fed437f1414, type: 3}
+  isInitialized: 0
