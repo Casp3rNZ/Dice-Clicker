@@ -1,4 +1,4 @@
-# Dice Idler
+# Dice Clicker
 An idle/incremental clicker game built in **Unity 6** where players roll dice to earn points, purchase upgrades, and unlock new dice types with unique materials and multipliers.
 
 
